@@ -3,8 +3,8 @@ import {it,expect} from 'vitest';
 import {readFileSync,existsSync} from 'node:fs';
 import {analyze,parseFile} from '../src/core.ts';
 import {preview,compareRanges} from '../src/comparison.ts';
-const paths=[process.env.PALANTIR_LOCAL_GPX_1,process.env.PALANTIR_LOCAL_GPX_2];
-const golden=process.env.PALANTIR_LOCAL_EXPECTED;
+const paths=[process.env.PALANTIRIX_LOCAL_GPX_1,process.env.PALANTIRIX_LOCAL_GPX_2];
+const golden=process.env.PALANTIRIX_LOCAL_EXPECTED;
 const available=paths.every(path=>path&&existsSync(path))&&!!golden&&existsSync(golden);
 const check=(actual:unknown,wanted:unknown,path='result'):void=>{
  if(typeof wanted==='number'){expect(actual,path).toBeCloseTo(wanted,5);return}

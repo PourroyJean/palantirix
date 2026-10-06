@@ -33,12 +33,12 @@ it('les deux GPX Saint-Mens fournissent une démonstration horodatée de la comp
 it('les exemples se chargent depuis la base Vite avec les limites habituelles',async()=>{
  const filename=EXAMPLE_TRACKS[0].filename;
  const get=async (url:string)=>{
-  expect(url).toBe('/palentirix/examples/'+filename);
+  expect(url).toBe('/palantirix/examples/'+filename);
   return new Response('<gpx/>',{headers:{'content-type':'application/gpx+xml'}});
  };
- const file=await fetchExampleFile(filename,'/palentirix/',get as typeof fetch);
+ const file=await fetchExampleFile(filename,'/palantirix/',get as typeof fetch);
  expect(file.name).toBe(filename);
  expect(file.size).toBeGreaterThan(0);
- await expect(fetchExampleFile(filename,'/palentirix/',(async()=>new Response('',{status:404})) as typeof fetch)).rejects.toThrow(/HTTP 404/);
- await expect(fetchExampleFile(filename,'/palentirix/',(async()=>new Response('a',{headers:{'content-length':String(MAX_BYTES+1)}})) as typeof fetch)).rejects.toThrow(/50 Mio/);
+ await expect(fetchExampleFile(filename,'/palantirix/',(async()=>new Response('',{status:404})) as typeof fetch)).rejects.toThrow(/HTTP 404/);
+ await expect(fetchExampleFile(filename,'/palantirix/',(async()=>new Response('a',{headers:{'content-length':String(MAX_BYTES+1)}})) as typeof fetch)).rejects.toThrow(/50 Mio/);
 });
