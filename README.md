@@ -24,6 +24,7 @@ Travailler sur une branche dédiée, ouvrir une PR vers `main` et attendre la v�
 ## Méthode
 
 - Durée totale = dernier timestamp − premier timestamp, en incluant les pauses.
+- Les trois KPI du parcours solo indiquent la distance GPS (km), le D+ et le D− bruts (m). Ils additionnent seulement les paires de points horodatés et consécutifs du même segment, à 30 s maximum d’écart. Chaque total affiche sa durée de couverture ; les parties sans coordonnées ou sans altitude ne sont pas estimées. Si aucune paire exploitable n’existe, afficher « — » plutôt qu’un faux zéro. Les variations d’altitude brutes peuvent amplifier le dénivelé par bruit de mesure.
 - Chaque mesure valide représente l'intervalle jusqu'au timestamp suivant, dans le même segment. Les intervalles strictement supérieurs à 30 s sont exclus des moyennes et des zones. Les valeurs absentes ne deviennent pas zéro ; les zéros de puissance et de cadence mesurés sont conservés.
 - Les moyennes sont pondérées par la durée couverte par **chaque** capteur. Les maxima utilisent toutes les mesures valides, y compris le dernier point (qui ne couvre aucun intervalle).
 - Z1 < 136, Z2 = 136–151, Z3 = 152–161, Z4 = 162–169 et Z5 ≥ 170 bpm avec les seuils par défaut. Les bornes inférieures sont incluses et les bornes supérieures exclues ; les quatre débuts de zone sont modifiables. Le temps sans couverture FC inclut les points sans FC, les longues interruptions et les limites de segments. Les durées sont calculées sur les timestamps avec maintien de la dernière FC, pas sur une FC continue réellement observée.

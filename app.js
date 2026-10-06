@@ -5,6 +5,8 @@ const drop = document.querySelector('.drop');
 const result = document.querySelector('#result');
 const status = document.querySelector('#status');
 const number = new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 1});
+const distanceNumber = new Intl.NumberFormat('fr-FR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const metersNumber = new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 0});
 const percent = new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 2});
 let formVersion = 0;
 
@@ -27,6 +29,26 @@ function card(title, value, caption) {
   const node = el('div', 'card');
   node.append(el('span', '', title), el('strong', '', value), el('small', '', caption));
   return node;
+}
+function routeKpi(title, value, unit, caption, icon, tone) {
+  const item = el('div', 'route-kpi route-kpi-' + tone);
+  const text = el('div', 'route-kpi-copy');
+  const figure = el('strong', 'route-kpi-value', value);
+  if (unit) figure.append(document.createTextNode('\u00a0'), el('span', 'route-kpi-unit', unit));
+  text.append(el('span', 'route-kpi-title', title), figure, el('small', 'route-kpi-caption', caption));
+  const badge = el('div', 'route-kpi-icon');
+  badge.setAttribute('aria-hidden', 'true');
+  const svg = svgEl('svg', {viewBox: '0 0 48 48', fill: 'none', 'stroke-width': 3,
+    'stroke-linecap': 'round', 'stroke-linejoin': 'round'});
+  const paths = {
+    distance: 'M8 22 40 8 26 40 21 27 8 22Z',
+    ascent: 'M7 34 19 22 27 29 40 16 M29 16h11v11',
+    descent: 'M7 14 19 26 27 19 40 32 M29 32h11V21',
+  };
+  svg.append(svgEl('path', {d: paths[icon]}));
+  badge.append(svg);
+  item.append(text, badge);
+  return item;
 }
 
 function drawZones(data) {
@@ -109,6 +131,16 @@ function drawChart(parent, data, key, title, unit, color) {
 function display(data, filename) {
   document.querySelector('#activity-title').textContent = filename;
   document.querySelector('#metadata').textContent = data.format + ' · ' + number.format(data.points) + ' points · ' + (data.sport === 'course' ? 'Course' : 'Vélo');
+  const route = data.route;
+  const routeCards = document.querySelector('#route-kpis'); clear(routeCards);
+  routeCards.append(
+    routeKpi('Distance totale', route.distance_m === null ? '—' : distanceNumber.format(route.distance_m / 1000), route.distance_m === null ? '' : 'km',
+      route.distance_m === null ? 'Coordonnées GPS indisponibles' : 'Distance GPS · ' + seconds(route.gps_covered_s) + ' couverts', 'distance', 'distance'),
+    routeKpi('Dénivelé positif total', route.ascent_m === null ? '—' : metersNumber.format(route.ascent_m), route.ascent_m === null ? '' : 'm',
+      route.ascent_m === null ? 'Altitude indisponible' : 'D+ brut · ' + seconds(route.elevation_covered_s) + ' couverts', 'ascent', 'ascent'),
+    routeKpi('Dénivelé négatif total', route.descent_m === null ? '—' : metersNumber.format(route.descent_m), route.descent_m === null ? '' : 'm',
+      route.descent_m === null ? 'Altitude indisponible' : 'D− brut · ' + seconds(route.elevation_covered_s) + ' couverts', 'descent', 'descent')
+  );
   const cards = document.querySelector('#cards'); clear(cards);
   cards.append(
     card('Durée totale', seconds(data.duration_s), 'Premier → dernier point'),
@@ -131,6 +163,10 @@ function display(data, filename) {
   drawChart(charts, data, 'cadence', 'Cadence', data.cadence_unit, '#6585a2');
   const warnings = document.querySelector('#warnings'); clear(warnings);
   for (const warning of data.warnings) warnings.append(el('p', '', 'ⓘ ' + warning));
+  if (route.gps_covered_s < data.duration_s && route.distance_m !== null)
+    warnings.append(el('p', '', 'ⓘ Distance partielle : interruptions ou coordonnées GPS absentes.'));
+  if (route.elevation_covered_s < data.duration_s && route.ascent_m !== null)
+    warnings.append(el('p', '', 'ⓘ Dénivelé partiel : interruptions ou altitude absente.'));
   result.hidden = false;
   result.scrollIntoView({behavior: 'smooth', block: 'start'});
 }

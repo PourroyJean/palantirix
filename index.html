@@ -24,11 +24,12 @@
     <div id="status" class="status" role="status" aria-live="polite"></div>
     <section id="result" class="result" hidden>
       <div class="section-heading result-heading"><div><span class="step">02 / RÉSULTATS</span><h2 id="activity-title">Vue d’ensemble</h2></div><span id="metadata" class="quiet"></span></div>
+      <div id="route-kpis" class="route-kpis" aria-label="Parcours et dénivelé"></div>
       <div id="cards" class="cards"></div>
       <div class="columns"><article class="panel zone-panel"><div class="section-heading"><div><span class="step">RÉPARTITION</span><h3>Vos cinq zones cardiaques</h3></div><span class="quiet">Maintien de la dernière FC connue</span></div><div id="zonebar" class="zonebar" role="img"></div><div id="zonelegend" class="zonelegend"></div><p class="footnote">Un intervalle de plus de 30 s ou sans FC reste « sans couverture » ; les zones ne nécessitent pas de puissance mesurée.</p></article><article class="panel coverage-panel"><span class="step">QUALITÉ DES DONNÉES</span><h3>Couverture</h3><div id="coverage"></div></article></div>
       <article class="panel charts-panel"><div class="section-heading"><div><span class="step">ÉVOLUTION</span><h3>Au fil de l’activité</h3></div><span class="quiet">Temps écoulé · lacunes non interpolées</span></div><div id="charts"></div></article>
       <div id="warnings" class="warnings" aria-live="polite"></div>
-      <p class="method">Les moyennes sont pondérées par le temps couvert. Chaque mesure représente l’intervalle jusqu’au point suivant (30 s maximum). Les maxima sont calculés sur les échantillons valides, y compris le dernier point.</p>
+      <p class="method">Distance GPS et D+/D− bruts : somme des variations entre points consécutifs valides, sans relier les ruptures ni les intervalles de plus de 30 s ; le dénivelé peut être sensible au bruit d’altitude. Les moyennes sont pondérées par le temps couvert. Chaque mesure représente l’intervalle jusqu’au point suivant (30 s maximum). Les maxima sont calculés sur les échantillons valides, y compris le dernier point.</p>
     </section>
     </div>
     <div id="compare-view" hidden>

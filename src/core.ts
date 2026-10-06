@@ -68,6 +68,22 @@ export function gpsRoute(route:Route):Route{if(route.kind!=='gpx')throw new Anal
   if(p.length<2||p.some(x=>x.lat===null||x.lon===null||x.lat < -90||x.lat>90||x.lon < -180||x.lon>180))throw new AnalysisError('Chaque GPX doit contenir au moins deux points GPS horodatés.');
   const d=[0];for(let i=1;i<p.length;i++)d.push(d[i-1]+(p[i].segment===p[i-1].segment?meters([p[i-1].lat!,p[i-1].lon!],[p[i].lat!,p[i].lon!]):0));return {...route,distances:d}
 }
+export function routeTotals(points:Point[]){
+  let distance=0,ascent=0,descent=0,gpsCovered=0,elevationCovered=0;
+  for(let i=0;i<points.length-1;i++){
+    const a=points[i],b=points[i+1],seconds=ms(a,b);
+    if(a.segment!==b.segment||seconds<=0||seconds>MAX_GAP)continue;
+    if(a.lat!==null&&a.lon!==null&&b.lat!==null&&b.lon!==null&&
+      [a.lat,b.lat].every(v=>v>=-90&&v<=90)&&[a.lon,b.lon].every(v=>v>=-180&&v<=180)){
+      distance+=meters([a.lat,a.lon],[b.lat,b.lon]);gpsCovered+=seconds;
+    }
+    if(a.ele!==null&&b.ele!==null){
+      const change=b.ele-a.ele;ascent+=Math.max(0,change);descent+=Math.max(0,-change);elevationCovered+=seconds;
+    }
+  }
+  return {distance_m:gpsCovered?distance:null,ascent_m:elevationCovered?ascent:null,
+    descent_m:elevationCovered?descent:null,gps_covered_s:gpsCovered,elevation_covered_s:elevationCovered};
+}
 export function analyze(route:Route,sport:'velo'|'course',z2:number,z3:number,z4:number,z5:number,mode:'double'|'direct'){
   if(sport!=='velo'&&sport!=='course')throw new AnalysisError('Choisissez « vélo » ou « course ».');if(mode!=='double'&&mode!=='direct')throw new AnalysisError('Convention de cadence inconnue.');
   if(![z2,z3,z4,z5].every(Number.isInteger)||!(0<z2&&z2<z3&&z3<z4&&z4<z5&&z5<=300))throw new AnalysisError('Seuils incohérents : 0 < début Z2 < début Z3 < début Z4 < début Z5 ≤ 300 bpm.');
@@ -83,5 +99,5 @@ export function analyze(route:Route,sport:'velo'|'course',z2:number,z3:number,z4
   for(const [key,label] of [['hr','FC'],['power','puissance'],['cadence','cadence']] as [Sensor,string][])if(!metrics[key].samples)warnings.push('Aucune mesure de '+label+' disponible.');else if(!coverage[key]&&duration)warnings.push('Aucun intervalle exploitable pour la moyenne de '+label+'.');
   if(zones.unknown_s)warnings.push('Le temps sans couverture FC inclut les mesures absentes et les interruptions de plus de 30 s.');
   if(sport==='course'&&sources.length){warnings.push('Cadence course : '+(factor===2?'conversion supposée ×2 des cycles/min en pas/min':'valeurs supposées déjà en pas/min')+'; convention non inscrite dans ce GPX/TCX. Les zéros sont exclus des moyennes, mais peuvent représenter une pause ou un défaut de mesure.');if(runningCoverage)warnings.push('« Foulée ≥ 130 pas/min » est un repère de cadence, pas une détection certaine de la course ou de la marche.')}
-  return {format:route.kind.toUpperCase(),sport,points:p.length,start:iso(start),end:iso(end),duration_s:duration,metrics,zones,thresholds:{z2_min:z2,z3_min:z3,z4_min:z4,z5_min:z5},cadence_unit:sport==='velo'?'tr/min':'pas/min (estimés)',cadence_mode:sport==='course'?mode:null,running_cadence:{average:runningCoverage?running/runningCoverage:null,covered_s:runningCoverage,threshold_spm:130},zero_cadence_s:zeroCadence,cadence_sources:sources,max_interval_s:MAX_GAP,warnings,chart:p.map(x=>({t:(x.time-start)/1000,segment:x.segment,hr:x.hr,power:x.power,cadence:x.cadence!==null&&(sport!=='course'||x.cadence>0)?x.cadence*factor:null}))};
+  return {format:route.kind.toUpperCase(),sport,points:p.length,start:iso(start),end:iso(end),duration_s:duration,route:routeTotals(p),metrics,zones,thresholds:{z2_min:z2,z3_min:z3,z4_min:z4,z5_min:z5},cadence_unit:sport==='velo'?'tr/min':'pas/min (estimés)',cadence_mode:sport==='course'?mode:null,running_cadence:{average:runningCoverage?running/runningCoverage:null,covered_s:runningCoverage,threshold_spm:130},zero_cadence_s:zeroCadence,cadence_sources:sources,max_interval_s:MAX_GAP,warnings,chart:p.map(x=>({t:(x.time-start)/1000,segment:x.segment,hr:x.hr,power:x.power,cadence:x.cadence!==null&&(sport!=='course'||x.cadence>0)?x.cadence*factor:null}))};
 }
