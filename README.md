@@ -1,6 +1,6 @@
 # Palentirix — Analyse GPX/TCX
 
-Application web statique en français : les calculs se font entièrement dans le navigateur, sans API ni serveur Python. Le dépôt et l’adresse GitHub Pages conservent le nom historique palentir.
+Application web statique en français : les calculs se font entièrement dans le navigateur, sans API ni serveur Python. Dépôt et site GitHub Pages : PourroyJean/palentirix et https://pourroyjean.github.io/palentirix/.
 
 Identité visuelle : une pierre de vision et un chemin stylisés dans le logo SVG original (`logo.svg`). Aucun visuel de la franchise n'est utilisé.
 
@@ -13,11 +13,11 @@ Identité visuelle : une pierre de vision et un chemin stylisés dans le logo SV
     npm ci
     npm run dev
 
-Node.js 22+ recommandé. Ouvrir l’adresse Vite affichée, puis choisir un GPX ou TCX de 50 Mio maximum **par fichier**. Les fichiers restent en mémoire et ne sont pas envoyés à un service externe. Après rechargement, il faut les sélectionner à nouveau. Sur certains mobiles, les très gros exports peuvent dépasser la mémoire disponible. L’application statique est également accessible après publication sous /palentir/ sans exécuter de serveur Python.
+Node.js 22+ recommandé. Ouvrir l’adresse Vite affichée, puis choisir un GPX ou TCX de 50 Mio maximum **par fichier**. Les fichiers restent en mémoire et ne sont pas envoyés à un service externe. Après rechargement, il faut les sélectionner à nouveau. Sur certains mobiles, les très gros exports peuvent dépasser la mémoire disponible. L’application statique est également accessible après publication sous /palentirix/ sans exécuter de serveur Python.
 
 Dans l’onglet « Une trace », glisser-déposer le fichier dans la grande zone d’import ou utiliser « Parcourir ». Le bouton d’analyse s’active seulement pour un GPX/TCX/XML non vide de 50 Mio maximum ; sport, zones et cadence restent réglables avant le calcul. Le lien d’aide explique où trouver l’export de l’activité.
 
-Vérifications : `npm run typecheck`, `npm test` et `npm run build`. Le workflow **CI** vérifie ces étapes sur chaque pull request et push vers `main`. Un second workflow **Deploy to GitHub Pages** reconstruit et publie uniquement `dist` pour le commit de `main` qui vient de réussir la CI. La source Pages est GitHub Actions. Site : https://pourroyjean.github.io/palentir/.
+Vérifications : `npm run typecheck`, `npm test` et `npm run build`. Le workflow **CI** vérifie ces étapes sur chaque pull request et push vers `main`. Un second workflow **Deploy to GitHub Pages** reconstruit et publie uniquement `dist` pour le commit de `main` qui vient de réussir la CI. La source Pages est GitHub Actions. Site : https://pourroyjean.github.io/palentirix/.
 
 ## Contribuer et déployer
 
