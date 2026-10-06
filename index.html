@@ -5,15 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Palantir — Analyse GPX/TCX</title>
   <meta name="theme-color" content="#152d35">
-  <link rel="icon" href="/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/styles.css">
-  <script src="/app.js" defer></script>
-  <script src="/compare.js" defer></script>
+  <link rel="icon" href="./logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="/app.js"></script>
+  <script type="module" src="/compare.js"></script>
 </head>
 <body>
-  <header class="masthead"><div class="brand"><img class="brand-mark" src="/logo.svg" alt="" width="34" height="34"> PALANTIR <span class="brand-sub">/ analyse d’activité</span></div><span class="local">● 100 % local</span></header>
+  <header class="masthead"><div class="brand"><img class="brand-mark" src="./logo.svg" alt="" width="34" height="34"> PALANTIR <span class="brand-sub">/ analyse d’activité</span></div><span class="local">● 100 % local</span></header>
   <main>
-    <section class="intro"><div><p class="eyebrow">PALANTIR / OBSERVATOIRE SPORTIF</p><h1>Vos traces,<br><em>en perspective.</em></h1><p class="lead">Importez une activité GPX ou TCX pour comprendre votre effort, vos zones cardiaques et vos données de puissance. Aucun fichier n’est conservé.</p></div><div class="intro-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><img class="hero-logo" src="/logo.svg" alt="" width="154" height="154"></div></section>
+    <section class="intro"><div><p class="eyebrow">PALANTIR / OBSERVATOIRE SPORTIF</p><h1>Vos traces,<br><em>en perspective.</em></h1><p class="lead">Importez une activité GPX ou TCX pour comprendre votre effort, vos zones cardiaques et vos données de puissance. Aucun fichier n’est conservé.</p></div><div class="intro-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><img class="hero-logo" src="./logo.svg" alt="" width="154" height="154"></div></section>
     <nav class="tabs" aria-label="Mode d’analyse"><button class="tab active" type="button" data-tab="single" aria-selected="true">Une trace</button><button class="tab" type="button" data-tab="compare" aria-selected="false">Comparer deux traces</button></nav>
     <div id="single-view">
     <form id="form" class="panel" novalidate>
@@ -35,10 +35,10 @@
       <form id="compare-form" class="panel" novalidate>
         <div class="section-heading"><div><span class="step">01 / DEUX ACTIVITÉS</span><h2>Choisir les segments</h2></div><span class="quiet">Deux GPX · 50 Mio chacun</span></div>
         <div class="compare-files">
-          <div class="compare-file"><strong>Trace 1 · référence</strong><p id="first-source" class="source-state" role="status">Chargement de la trace par défaut…</p><label>Choisir un autre GPX<input type="file" name="reference_file" accept=".gpx,application/gpx+xml"></label><label>Cadence<select name="cadence_first"><option value="double">Demi-cadence → ×2</option><option value="direct">Déjà en pas/min → ×1</option></select></label>
+          <div class="compare-file"><strong>Trace 1 · référence</strong><p id="first-source" class="source-state" role="status">Choisissez un GPX pour commencer.</p><label>Choisir un autre GPX<input type="file" name="reference_file" accept=".gpx,application/gpx+xml"></label><label>Cadence<select name="cadence_first"><option value="double">Demi-cadence → ×2</option><option value="direct">Déjà en pas/min → ×1</option></select></label>
             <div id="first-selector" class="segment-selector" hidden><div class="segment-head"><strong>Segment de la trace 1</strong><span id="first-length"></span></div><div class="dual-slider"><div id="first-selected-track" class="selected-track"></div><input id="first-start-range" type="range" min="0" value="0" aria-label="Début de la trace 1"><input id="first-end-range" type="range" min="0" value="0" aria-label="Fin de la trace 1"></div><div class="bound-controls"><label>Début · km<input id="first-start" type="number" min="0" step="0.01" inputmode="decimal"></label><label>Fin · km<input id="first-end" type="number" min="0" step="0.01" inputmode="decimal"></label></div></div>
           </div>
-          <div class="compare-file"><strong>Trace 2 · à comparer</strong><p id="second-source" class="source-state" role="status">Chargement de la trace par défaut…</p><label>Choisir un autre GPX<input type="file" name="challenger_file" accept=".gpx,application/gpx+xml"></label><label>Cadence<select name="cadence_second"><option value="double">Demi-cadence → ×2</option><option value="direct">Déjà en pas/min → ×1</option></select></label>
+          <div class="compare-file"><strong>Trace 2 · à comparer</strong><p id="second-source" class="source-state" role="status">Choisissez un GPX pour commencer.</p><label>Choisir un autre GPX<input type="file" name="challenger_file" accept=".gpx,application/gpx+xml"></label><label>Cadence<select name="cadence_second"><option value="double">Demi-cadence → ×2</option><option value="direct">Déjà en pas/min → ×1</option></select></label>
             <div id="second-selector" class="segment-selector" hidden><div class="segment-head"><strong>Segment de la trace 2</strong><span id="second-length"></span></div><div class="dual-slider"><div id="second-selected-track" class="selected-track"></div><input id="second-start-range" type="range" min="0" value="0" aria-label="Début de la trace 2"><input id="second-end-range" type="range" min="0" value="0" aria-label="Fin de la trace 2"></div><div class="bound-controls"><label>Début · km<input id="second-start" type="number" min="0" step="0.01" inputmode="decimal"></label><label>Fin · km<input id="second-end" type="number" min="0" step="0.01" inputmode="decimal"></label></div></div>
           </div>
         </div>

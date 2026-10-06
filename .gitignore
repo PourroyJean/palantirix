@@ -7,3 +7,6 @@ __pycache__/
 .env
 .env.*
 local-traces.json
+node_modules/
+dist/
+coverage/

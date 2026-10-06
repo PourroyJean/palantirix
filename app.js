@@ -1,3 +1,4 @@
+import {engine} from './src/client.ts';
 const form = document.querySelector('#form');
 const fileInput = document.querySelector('#file');
 const drop = document.querySelector('.drop');
@@ -5,6 +6,7 @@ const result = document.querySelector('#result');
 const status = document.querySelector('#status');
 const number = new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 1});
 const percent = new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 2});
+let formVersion = 0;
 
 function seconds(value) {
   if (value == null) return '—';
@@ -134,8 +136,12 @@ function display(data, filename) {
 }
 
 fileInput.addEventListener('change', () => {
+  formVersion++;
   document.querySelector('#filename').textContent = fileInput.files[0]?.name || 'Choisir un fichier d’activité';
+  result.hidden = true;
 });
+for (const control of form.querySelectorAll('select, input[type="number"]'))
+  control.addEventListener('input', () => { formVersion++; result.hidden = true; });
 function updateSportFields() {
   document.querySelector('#cadence-setting').hidden = document.querySelector('#sport').value !== 'course';
 }
@@ -158,12 +164,12 @@ form.addEventListener('submit', async event => {
     status.textContent = 'Renseignez des seuils cohérents : 0 < Z2 < Z3 < Z4 < Z5 ≤ 300 bpm.'; status.classList.add('error'); return;
   }
   const button = document.querySelector('#submit'); button.disabled = true; status.textContent = 'Analyse en cours…';
+  const version = ++formVersion;
   try {
-    const response = await fetch('/api/analyze', {method: 'POST', body: new FormData(form)});
-    const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || 'Import impossible.');
+    const payload = await engine.request('analyze', {file, sport: form.elements.namedItem('sport').value, mode: form.elements.namedItem('cadence_mode').value, z2, z3, z4, z5}, ratio => { if (version === formVersion) status.textContent = 'Analyse locale… ' + Math.round(ratio * 100) + ' %'; });
+    if (version !== formVersion) return;
     status.textContent = ''; display(payload, file.name);
   } catch (error) {
-    status.textContent = error.message || 'Le serveur local ne répond pas.'; status.classList.add('error');
+    if (version === formVersion) { status.textContent = error.message || 'Le traitement local a échoué.'; status.classList.add('error'); }
   } finally { button.disabled = false; }
 });

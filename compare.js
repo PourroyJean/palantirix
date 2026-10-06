@@ -1,3 +1,4 @@
+import {engine} from './src/client.ts';
 const compareForm = document.querySelector('#compare-form');
 const compareResult = document.querySelector('#compare-result');
 const compareStatus = document.querySelector('#compare-status');
@@ -143,7 +144,7 @@ function installPreview(side, preview, name, origin) {
     field.max = (total / 1000).toFixed(3);
   }
   document.querySelector('#' + side + '-selector').hidden = false;
-  document.querySelector('#' + side + '-source').textContent = name + (origin === 'default' ? ' · préchargé' : ' · importé');
+  document.querySelector('#' + side + '-source').textContent = name + ' · importé';
   document.querySelector('#compare-submit').disabled = !sources.first || !sources.second;
   refreshControl(side);
   invalidate();
@@ -157,29 +158,12 @@ function reportUnavailable(side, name, error) {
   invalidate();
   drawMap();
 }
-async function loadDefaults() {
-  try {
-    const response = await fetch('/api/default-traces');
-    const payload = await response.json();
-    if (!response.ok) throw new Error(payload.error || 'Préchargement indisponible.');
-    for (const [side, key] of [['first', 'first'], ['second', 'second']]) {
-      if (requestVersions[side] !== 0) continue;
-      const item = payload.traces[key];
-      if (item?.preview) installPreview(side, item.preview, item.name, 'default');
-      else reportUnavailable(side, item?.name || 'Trace par défaut', item?.error || 'Aucun aperçu disponible.');
-    }
-  } catch (error) {
-    for (const side of ['first', 'second']) if (requestVersions[side] === 0)
-      reportUnavailable(side, 'Trace par défaut', error.message);
-  }
-}
-loadDefaults();
-
 for (const [side, fieldName] of [['first', 'reference_file'], ['second', 'challenger_file']]) {
   compareForm.elements.namedItem(fieldName).addEventListener('change', async event => {
     const file = event.target.files[0];
     if (!file) return;
     const version = ++requestVersions[side];
+    engine.request('clear', {side}).catch(() => {});
     sources[side] = null;
     document.querySelector('#' + side + '-selector').hidden = true;
     document.querySelector('#compare-submit').disabled = true;
@@ -191,10 +175,10 @@ for (const [side, fieldName] of [['first', 'reference_file'], ['second', 'challe
     }
     document.querySelector('#' + side + '-source').textContent = file.name + ' · lecture en cours…';
     try {
-      const data = new FormData(); data.append('file', file);
-      const response = await fetch('/api/preview', {method: 'POST', body: data});
-      const preview = await response.json();
-      if (!response.ok) throw new Error(preview.error || 'Aperçu impossible.');
+      const preview = await engine.request('load', {side, file}, ratio => {
+        if (version === requestVersions[side]) document.querySelector('#' + side + '-source').textContent =
+          file.name + ' · lecture locale ' + Math.round(ratio * 100) + ' %';
+      });
       if (version === requestVersions[side]) installPreview(side, preview, file.name, 'upload');
     } catch (error) {
       if (version === requestVersions[side]) reportUnavailable(side, file.name, error.message);
@@ -682,7 +666,7 @@ function showResults(payload) {
     compareKm.format(b.start_m / 1000) + '–' + compareKm.format(b.end_m / 1000) + ' km');
   tableRow(body, 'Chrono écoulé', timeText(a.duration_s), timeText(b.duration_s),
     (payload.delta_s >= 0 ? '+' : '−') + timeText(Math.abs(payload.delta_s)));
-  tableRow(body, 'Distance parcourue', measurement(a.distance_km, 'km'), measurement(b.distance_km, 'km'),
+  tableRow(body, 'Distance parcourue', compareKm.format(a.distance_km) + ' km', compareKm.format(b.distance_km) + ' km',
     difference(a.distance_km * 1000, b.distance_km * 1000, 'm'));
   tableRow(body, 'Allure', timeText(a.pace_s_per_km) + '/km', timeText(b.pace_s_per_km) + '/km',
     (b.pace_s_per_km - a.pace_s_per_km >= 0 ? '+' : '−') +
@@ -723,26 +707,17 @@ compareForm.addEventListener('submit', async event => {
   const button = document.querySelector('#compare-submit');
   button.disabled = true; setStatus('Calcul des segments en cours…');
   const version = selectionVersion;
-  const params = new FormData();
-  for (const [side, key] of [['first', 'reference_file'], ['second', 'challenger_file']]) {
-    const source = sources[side];
-    if (source.origin === 'upload') params.append(key, compareForm.elements.namedItem(key).files[0]);
-    else params.append(key + '_default', side);
-  }
-  for (const side of ['first', 'second']) {
-    params.append(side + '_start_m', String(sources[side].start));
-    params.append(side + '_end_m', String(sources[side].end));
-  }
-  params.append('cadence_first', compareForm.elements.namedItem('cadence_first').value);
-  params.append('cadence_second', compareForm.elements.namedItem('cadence_second').value);
   try {
-    const response = await fetch('/api/compare', {method: 'POST', body: params});
-    const payload = await response.json();
+    const payload = await engine.request('compare', {
+      firstStart: sources.first.start, firstEnd: sources.first.end,
+      secondStart: sources.second.start, secondEnd: sources.second.end,
+      cadenceFirst: compareForm.elements.namedItem('cadence_first').value,
+      cadenceSecond: compareForm.elements.namedItem('cadence_second').value,
+    });
     if (selectionVersion !== version) return;
-    if (!response.ok) throw new Error(payload.error || 'Calcul impossible.');
     setStatus(''); showResults(payload);
   } catch (error) {
-    if (selectionVersion === version) setStatus(error.message || 'Le serveur local ne répond pas.', true);
+    if (selectionVersion === version) setStatus(error.message || 'Le traitement local a échoué.', true);
   }
   finally { button.disabled = !sources.first || !sources.second; }
 });

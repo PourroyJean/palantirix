@@ -1,6 +1,6 @@
 # Palantir — Analyse GPX/TCX
 
-Mini-application web locale en français, sans dépendance Python externe. Python 3.10+ recommandé.
+Application web statique en français : les calculs se font entièrement dans le navigateur, sans API ni serveur Python.
 
 Identité visuelle : une pierre de vision et un chemin stylisés dans le logo SVG original (`logo.svg`). Aucun visuel de la franchise n'est utilisé.
 
@@ -10,11 +10,12 @@ Identité visuelle : une pierre de vision et un chemin stylisés dans le logo SV
 
 ## Démarrage
 
-    python3 app.py
+    npm ci
+    npm run dev
 
-Ouvrir ensuite http://127.0.0.1:8765 dans le navigateur et importer **un** fichier GPX ou TCX de 50 Mio maximum. Choisir le sport et ajuster au besoin les seuils de début Z2/Z3/Z4/Z5 (136, 152, 162 et 170 bpm par défaut, d'après les cinq zones fournies). Pour arrêter, faire Ctrl+C dans le terminal.
+Node.js 22+ recommandé. Ouvrir l’adresse Vite affichée, puis choisir un GPX ou TCX de 50 Mio maximum **par fichier**. Les fichiers restent en mémoire et ne sont pas envoyés à un service externe. Après rechargement, il faut les sélectionner à nouveau. Sur certains mobiles, les très gros exports peuvent dépasser la mémoire disponible. L’application statique est également accessible après publication sous /palentir/ sans exécuter de serveur Python.
 
-Tests : python3 -m unittest -v. Si le port 8765 est déjà occupé, l'arrêter avant de relancer l'application.
+Vérifications : `npm run typecheck`, `npm test` et `npm run build`. Le workflow exécute ces étapes sur pull request et sur main ; il déploie uniquement `dist` si tout réussit. Pour activer le site : GitHub → Settings → Pages → Source → GitHub Actions. Adresse attendue : https://pourroyjean.github.io/palentir/.
 
 ## Méthode
 
@@ -25,12 +26,11 @@ Tests : python3 -m unittest -v. Si le port 8765 est déjà occupé, l'arrêter a
 - En vélo, la cadence est affichée en tr/min (zéros conservés). En course, le sélecteur permet de choisir si la cadence GPX/TCX correspond à un cycle de deux pas (**×2** par défaut pour cet export) ou directement à des pas/min (**×1**). La convention n'est pas inscrite dans le GPX : c'est une hypothèse à contrôler avec la montre. La cadence de course affichée exclut les zéros (pause ou défaut de mesure possible) et inclut les cadences positives plus lentes, donc la marche éventuelle. Une seconde carte indique la moyenne de la foulée à **≥ 130 pas/min** (simple critère de cadence, pas une détection certaine du mode de déplacement) et sa durée couverte. Les lacunes restent visibles dans la courbe et dans la couverture.
 - Les courbes sont des SVG produits localement ; aucune lacune de mesure ou interruption de plus de 30 s n'est interpolée.
 
-Les fichiers sont analysés en mémoire et ne sont pas enregistrés par l'application. Le serveur n'écoute que sur 127.0.0.1 ; ce n'est pas un serveur à exposer sur Internet.
-Le serveur refuse les requêtes dont l’hôte ou l’origine ne correspond pas à sa page locale sur le port 8765.
+Les fichiers sont analysés par un Web Worker en mémoire et ne sont pas enregistrés par l'application.
 
 ## Comparer deux traces
 
-L'onglet **Comparer deux traces** peut précharger deux GPX locaux depuis `~/Downloads`, sans les copier ni les publier. Le préchargement est facultatif : créez `local-traces.json` à partir de `local-traces.example.json` et remplacez les valeurs `first` et `second` par les **seuls noms** de vos fichiers présents dans Downloads. Ce fichier de configuration est ignoré par Git. Sans configuration, ou si un fichier est absent, illisible ou sans activité horodatée, l'interface propose l'import manuel. Chaque fichier est limité à 50 Mio et seuls les deux identifiants configurés peuvent être lus par l'API locale.
+L'onglet **Comparer deux traces** demande deux GPX horodatés choisis manuellement ; aucun GPX de Downloads n'est préchargé. Chaque fichier est limité à 50 Mio. Les traces restent en mémoire pendant la session pour déplacer librement les bornes sans réimporter.
 
 Chaque trace possède ses propres bornes **début / fin** en kilomètres GPS, modifiables par deux curseurs ou par saisie numérique (pas de 10 m ; fin exacte possible). Les tracés entiers apparaissent atténués sur une carte locale ; les portions sélectionnées sont en bleu plein pour la référence et orange pointillé pour la deuxième trace. Curseurs, bornes et légende reprennent ces couleurs. Les extrémités sont interpolées sur les points GPS, et les segments séparés et lacunes de plus de 30 s ne sont pas reliés. Aucun fond cartographique externe ni requête de tuiles n'est utilisé.
 
