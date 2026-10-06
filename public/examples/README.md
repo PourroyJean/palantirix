@@ -1,10 +1,6 @@
-# Traces publiques de démonstration
+# Traces de démonstration Saint-Mens (2026)
 
-Deux parcours GPS enregistrés sur le sentier Stone Mountain Cherokee (Géorgie, États-Unis), les 23 mars 2025 et 16 mai 2026. Source : HikeAlong Open Data, https://hikealongtours.com/data/ .
+- `Saint_Mens_Player1.gpx` : copie inchangée de `Gap_en_cim_Saint_Mens (2).gpx`. Position, temps, altitude, FC, cadence et puissance.
+- `Saint_Mens_Player2.gpx` : copie inchangée de `GapTrail20261003125954.gpx`. Position, temps, altitude et FC ; ni cadence ni puissance.
 
-- stone-mountain-2025-03-23.gpx : https://hikealongtours.com/hikes/2025-03-23-stone-mountain-cherokee/track.gpx
-- stone-mountain-2026-05-16.gpx : https://hikealongtours.com/hikes/2026-05-16-stone-mountain-cherokee/track.gpx
-
-Licence des **GPX** : Creative Commons Attribution 4.0 International (CC BY 4.0), https://creativecommons.org/licenses/by/4.0/ . Les fichiers ont été copiés sans modification, sauf le nom de fichier. Cette licence s'applique aux GPX et non au code de Palentirix (PolyForm Noncommercial).
-
-Les GPX contiennent les positions, altitudes et timestamps. Ils ne contiennent ni fréquence cardiaque, ni cadence, ni puissance. Ils ne sont pas des traces GR20 et ne représentent pas exactement le même parcours.
+Ces fichiers contiennent des positions, horaires et données biométriques. Publiés avec le site, ils peuvent être téléchargés par quiconque. La licence PolyForm Noncommercial du code de l’application ne s’applique pas automatiquement aux droits relatifs à ces GPX.

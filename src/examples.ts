@@ -1,10 +1,10 @@
 import {MAX_BYTES} from './core.ts';
 
-// Public CC BY 4.0 tracks, copied unchanged from HikeAlong. Paths are relative
-// to Vite's base URL so local development and GitHub Pages use the same code.
+// User-selected demonstration tracks. Paths are relative to Vite's base URL
+// so local development and GitHub Pages use the same code.
 export const EXAMPLE_TRACKS = [
-  {side:'first', filename:'stone-mountain-2025-03-23.gpx', label:'Stone Mountain · 23 mars 2025'},
-  {side:'second', filename:'stone-mountain-2026-05-16.gpx', label:'Stone Mountain · 16 mai 2026'},
+  {side:'first', filename:'Saint_Mens_Player1.gpx', label:'Saint-Mens · Player 1'},
+  {side:'second', filename:'Saint_Mens_Player2.gpx', label:'Saint-Mens · Player 2'},
 ] as const;
 
 export async function fetchExampleFile(filename:string, base:string, get:typeof fetch=fetch):Promise<File> {

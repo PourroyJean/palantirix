@@ -2,9 +2,9 @@ __pycache__/
 *.py[cod]
 .DS_Store
 *.[gG][pP][xX]
-# Only these two openly licensed HikeAlong examples may be distributed.
-!public/examples/stone-mountain-2025-03-23.gpx
-!public/examples/stone-mountain-2026-05-16.gpx
+# Explicitly approved public examples; all other GPX files remain ignored.
+!public/examples/Saint_Mens_Player1.gpx
+!public/examples/Saint_Mens_Player2.gpx
 *.[tT][cC][xX]
 *.[fF][iI][tT]
 .env
