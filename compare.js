@@ -1,6 +1,7 @@
 import {engine} from './src/client.ts';
 import {showCompareMap,closeMap,refreshMap} from './map.js';
 import {clampDistance,distanceAtX,xAtDistance,heartRateAt,paceAt} from './src/chart-cursor.ts';
+import {EXAMPLE_TRACKS,fetchExampleFile} from './src/examples.ts';
 const compareForm = document.querySelector('#compare-form');
 const compareResult = document.querySelector('#compare-result');
 const compareStatus = document.querySelector('#compare-status');
@@ -175,33 +176,62 @@ function reportUnavailable(side, name, error) {
   invalidate();
   drawMap();
 }
+function clearSource(side) {
+  const version = ++requestVersions[side];
+  engine.request('clear', {side}).catch(() => {});
+  sources[side] = null;
+  document.querySelector('#' + side + '-selector').hidden = true;
+  document.querySelector('#compare-submit').disabled = true;
+  invalidate(); drawMap();
+  return version;
+}
+async function loadSide(side, file, version, name = file.name, origin = 'upload') {
+  if (version !== requestVersions[side]) return false;
+  if (!file.size || file.size > 50 * 1024 * 1024) {
+    reportUnavailable(side, name, 'fichier vide ou de plus de 50 Mio.'); return false;
+  }
+  document.querySelector('#' + side + '-source').textContent = name + ' · lecture en cours…';
+  try {
+    const preview = await engine.request('load', {side, file}, ratio => {
+      if (version === requestVersions[side]) document.querySelector('#' + side + '-source').textContent =
+        name + ' · lecture locale ' + Math.round(ratio * 100) + ' %';
+    });
+    if (version !== requestVersions[side]) return false;
+    installPreview(side, preview, name, origin);
+    return true;
+  } catch (error) {
+    if (version === requestVersions[side]) reportUnavailable(side, name, error.message);
+    return false;
+  }
+}
 for (const [side, fieldName] of [['first', 'reference_file'], ['second', 'challenger_file']]) {
   compareForm.elements.namedItem(fieldName).addEventListener('change', async event => {
     const file = event.target.files[0];
-    if (!file) return;
-    const version = ++requestVersions[side];
-    engine.request('clear', {side}).catch(() => {});
-    sources[side] = null;
-    document.querySelector('#' + side + '-selector').hidden = true;
-    document.querySelector('#compare-submit').disabled = true;
-    invalidate();
-    drawMap();
-    if (file.size > 50 * 1024 * 1024) {
-      reportUnavailable(side, file.name, 'plus de 50 Mio.');
-      return;
-    }
-    document.querySelector('#' + side + '-source').textContent = file.name + ' · lecture en cours…';
-    try {
-      const preview = await engine.request('load', {side, file}, ratio => {
-        if (version === requestVersions[side]) document.querySelector('#' + side + '-source').textContent =
-          file.name + ' · lecture locale ' + Math.round(ratio * 100) + ' %';
-      });
-      if (version === requestVersions[side]) installPreview(side, preview, file.name, 'upload');
-    } catch (error) {
-      if (version === requestVersions[side]) reportUnavailable(side, file.name, error.message);
-    }
+    if (file) await loadSide(side, file, clearSource(side));
   });
 }
+
+document.querySelector('#load-example').addEventListener('click', async event => {
+  const button = event.currentTarget;
+  button.disabled = true;
+  const versions = {first: clearSource('first'), second: clearSource('second')};
+  setStatus('Téléchargement des deux traces publiques…');
+  try {
+    const files = await Promise.all(EXAMPLE_TRACKS.map(track =>
+      fetchExampleFile(track.filename, import.meta.env.BASE_URL)));
+    if (EXAMPLE_TRACKS.some(track => versions[track.side] !== requestVersions[track.side])) return;
+    const loaded = await Promise.all(EXAMPLE_TRACKS.map((track, index) =>
+      loadSide(track.side, files[index], versions[track.side], track.label, 'example')));
+    if (loaded.every(Boolean)) {
+      setStatus('Deux parcours chargés : sélectionnez vos segments, ou consultez la comparaison complète ci-dessous.');
+      await calculateComparison();
+    } else if (EXAMPLE_TRACKS.every(track => versions[track.side] === requestVersions[track.side]))
+      setStatus('Impossible de charger les deux exemples. Vérifiez les messages sous chaque trace.', true);
+  } catch (error) {
+    if (EXAMPLE_TRACKS.every(track => versions[track.side] === requestVersions[track.side]))
+      setStatus('Exemples indisponibles : ' + (error.message || 'vérifiez la connexion.'), true);
+  } finally { button.disabled = false; }
+});
 
 document.querySelectorAll('[data-tab]').forEach(button => button.addEventListener('click', () => {
   const comparing = button.dataset.tab === 'compare';
@@ -832,8 +862,7 @@ function showResults(payload) {
   compareResult.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 
-compareForm.addEventListener('submit', async event => {
-  event.preventDefault();
+async function calculateComparison() {
   invalidate();
   if (!sources.first || !sources.second) {
     setStatus('Deux activités GPX horodatées sont nécessaires.', true); return;
@@ -854,6 +883,7 @@ compareForm.addEventListener('submit', async event => {
     if (selectionVersion === version) setStatus(error.message || 'Le traitement local a échoué.', true);
   }
   finally { button.disabled = !sources.first || !sources.second; }
-});
+}
+compareForm.addEventListener('submit', event => { event.preventDefault(); void calculateComparison(); });
 for (const name of ['cadence_first', 'cadence_second'])
   compareForm.elements.namedItem(name).addEventListener('change', invalidate);

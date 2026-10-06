@@ -69,6 +69,14 @@
 }
 [hidden] { display: none !important; }
 .tabs { display:flex; gap:8px; margin:0 0 16px; }
+.example-banner { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px 24px; margin-bottom:14px; background:#eff6f2; }
+.example-banner strong { display:block; font-size:17px; color:#244c42; }
+.example-banner p { max-width:720px; margin:7px 0; font-size:13px; line-height:1.5; }
+.example-banner small { display:block; max-width:720px; color:#587265; line-height:1.45; }
+.example-banner a { color:#176bc8; }
+.example-banner button { border:0; border-radius:9px; padding:13px 18px; background:#263c2d; color:#fff; font-weight:750; cursor:pointer; }
+.example-banner button:disabled { opacity:.6; cursor:wait; }
+.example-banner button:focus-visible { outline:3px solid #37858c; outline-offset:3px; }
 .tab { border:1px solid #d9e3d1; border-radius:999px; padding:12px 20px; background:white; color:#59705b; font-weight:750; }
 .tab.active { color:white; background:#263c2d; border-color:#263c2d; }
 .compare-files { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
