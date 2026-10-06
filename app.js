@@ -1,7 +1,10 @@
 import {engine} from './src/client.ts';
+import {activityFileError} from './src/upload.ts';
 const form = document.querySelector('#form');
 const fileInput = document.querySelector('#file');
 const drop = document.querySelector('.drop');
+const browse = document.querySelector('#browse');
+const submit = document.querySelector('#submit');
 const result = document.querySelector('#result');
 const status = document.querySelector('#status');
 const number = new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 1});
@@ -229,11 +232,26 @@ function display(data, filename) {
   result.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 
-fileInput.addEventListener('change', () => {
+function updateSelectedFile() {
   formVersion++;
-  document.querySelector('#filename').textContent = fileInput.files[0]?.name || 'Choisir un fichier d’activité';
+  const file = fileInput.files[0];
+  drop.classList.toggle('has-file', Boolean(file));
+  document.querySelector('#filename').textContent = file?.name || 'Déposez votre fichier GPX ou TCX';
+  const size = file && (file.size < 1024 * 1024
+    ? new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 0}).format(file.size / 1024) + ' Kio'
+    : new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 1}).format(file.size / 1024 / 1024) + ' Mio');
+  document.querySelector('#drop-hint').textContent = file
+    ? 'Prêt pour l’analyse · ' + size + ' · cliquez pour remplacer'
+    : 'Glissez-le ici ou cliquez pour le sélectionner.';
+  const error = activityFileError(file);
+  submit.disabled = Boolean(error);
+  status.textContent = '';
+  status.classList.remove('error');
+  if (file && error) { status.textContent = error; status.classList.add('error'); }
   result.hidden = true;
-});
+}
+fileInput.addEventListener('change', updateSelectedFile);
+browse.addEventListener('click', () => fileInput.click());
 for (const control of form.querySelectorAll('select, input[type="number"]'))
   control.addEventListener('input', () => { formVersion++; result.hidden = true; });
 function updateSportFields() {
@@ -241,23 +259,35 @@ function updateSportFields() {
 }
 document.querySelector('#sport').addEventListener('change', updateSportFields);
 updateSportFields();
-drop.addEventListener('dragover', event => { event.preventDefault(); drop.classList.add('drag'); });
-drop.addEventListener('dragleave', () => drop.classList.remove('drag'));
+drop.addEventListener('dragenter', event => { event.preventDefault(); drop.classList.add('drag'); });
+drop.addEventListener('dragover', event => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; drop.classList.add('drag'); });
+drop.addEventListener('dragleave', event => { if (!drop.contains(event.relatedTarget)) drop.classList.remove('drag'); });
 drop.addEventListener('drop', event => {
   event.preventDefault(); drop.classList.remove('drag');
-  if (event.dataTransfer.files.length) { fileInput.files = event.dataTransfer.files; fileInput.dispatchEvent(new Event('change')); }
+  if (event.dataTransfer?.files.length) {
+    const list = new DataTransfer(); list.items.add(event.dataTransfer.files[0]);
+    fileInput.files = list.files;
+    updateSelectedFile();
+  }
+});
+// Dropping outside the target must not navigate away from the activity.
+document.addEventListener('dragover', event => {
+  if (event.dataTransfer?.types.includes('Files')) event.preventDefault();
+});
+document.addEventListener('drop', event => {
+  if (event.dataTransfer?.types.includes('Files')) event.preventDefault();
 });
 form.addEventListener('submit', async event => {
   event.preventDefault(); status.textContent = ''; status.classList.remove('error'); result.hidden = true;
   const file = fileInput.files[0];
   const thresholds = [2, 3, 4, 5].map(i => Number(document.querySelector('#z' + i).value));
   const [z2, z3, z4, z5] = thresholds;
-  if (!file) { status.textContent = 'Choisissez un fichier GPX ou TCX.'; status.classList.add('error'); return; }
-  if (file.size > 50 * 1024 * 1024) { status.textContent = 'Ce fichier dépasse 50 Mio.'; status.classList.add('error'); return; }
+  const fileError = activityFileError(file);
+  if (fileError) { status.textContent = fileError; status.classList.add('error'); return; }
   if (!thresholds.every(Number.isInteger) || z2 <= 0 || z2 >= z3 || z3 >= z4 || z4 >= z5 || z5 > 300) {
     status.textContent = 'Renseignez des seuils cohérents : 0 < Z2 < Z3 < Z4 < Z5 ≤ 300 bpm.'; status.classList.add('error'); return;
   }
-  const button = document.querySelector('#submit'); button.disabled = true; status.textContent = 'Analyse en cours…';
+  const button = submit; button.disabled = true; status.textContent = 'Analyse en cours…';
   const version = ++formVersion;
   try {
     const payload = await engine.request('analyze', {file, sport: form.elements.namedItem('sport').value, mode: form.elements.namedItem('cadence_mode').value, z2, z3, z4, z5}, ratio => { if (version === formVersion) status.textContent = 'Analyse locale… ' + Math.round(ratio * 100) + ' %'; });
@@ -265,5 +295,5 @@ form.addEventListener('submit', async event => {
     status.textContent = ''; display(payload, file.name);
   } catch (error) {
     if (version === formVersion) { status.textContent = error.message || 'Le traitement local a échoué.'; status.classList.add('error'); }
-  } finally { button.disabled = false; }
+  } finally { button.disabled = Boolean(activityFileError(fileInput.files[0])); }
 });

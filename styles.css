@@ -34,6 +34,36 @@
 @media(max-width:700px) { .grade-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:580px) { .route-kpis { grid-template-columns:1fr; gap:10px; } .route-kpi:first-child { grid-column:auto; } .route-kpi { min-height:124px; padding:20px; } .route-kpi-value { margin:10px 0 6px; font-size:36px; } .route-kpi-icon { width:58px; height:58px; } }
 @media(max-width:520px) { .grade-legend { position:static; margin:10px; padding:10px; display:flex; flex-wrap:wrap; } .grade-kpi { min-height:135px; } }
+
+/* Solo import: large, accessible drop zone in the Palantir palette. */
+.import-panel { padding:clamp(24px,4vw,46px); border-radius:26px; }
+.import-heading { margin-bottom:25px; }
+.import-step { display:inline-flex; align-items:center; padding:9px 17px; border:1px solid #dbe9e5; border-radius:999px; background:#edf6f3; color:#24716f; font-size:12px; font-weight:800; }
+.import-heading-row { display:flex; justify-content:space-between; align-items:end; gap:16px; margin-top:20px; }
+.import-heading-row h2 { margin:0; font-size:clamp(26px,3.4vw,37px); letter-spacing:-.05em; }
+.import-panel .drop { min-height:clamp(225px,30vw,305px); gap:14px; border:2px dashed #cbdeda; border-radius:22px; padding:34px 22px; background:linear-gradient(155deg,#fafdfb,#f2f7f6); transition:border-color .18s,background .18s,box-shadow .18s; }
+.import-panel .drop:hover,.import-panel .drop.drag,.import-panel .drop:focus-within { border-color:#367f84; background:#ecf7f4; box-shadow:inset 0 0 0 2px #367f8420; }
+.import-panel .drop:focus-within { outline:3px solid #3b818c66; outline-offset:3px; }
+.import-panel .drop.has-file { border-style:solid; border-color:#8fbdb5; background:#eff8f3; }
+.import-panel .drop-icon { display:grid; place-items:center; width:66px; height:66px; border-radius:18px; background:#def1ee; color:#247782; }
+.import-panel .drop-icon svg { display:block; width:34px; height:34px; }
+.import-panel .drop strong { font-size:clamp(19px,2.6vw,30px); letter-spacing:-.04em; line-height:1.2; overflow-wrap:anywhere; max-width:100%; }
+.import-panel .drop small { color:#718786; font-size:clamp(13px,1.5vw,16px); line-height:1.4; }
+.import-panel .drop input:focus-visible { outline:none; }
+.upload-actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:19px; }
+.upload-actions button { min-height:52px; border-radius:11px; padding:0 22px; font-weight:800; }
+.upload-actions #submit { display:inline-flex; align-items:center; justify-content:space-between; gap:42px; border:1px solid #183e48; background:#183e48; color:white; }
+.upload-actions #submit:not(:disabled):hover { background:#28626b; }
+.upload-actions #submit:disabled { opacity:.52; cursor:not-allowed; }
+.upload-actions #browse { border:1px solid #c9dcd8; background:white; color:#214a50; }
+.upload-actions #browse:hover { background:#eff7f5; }
+.upload-actions button:focus-visible,.import-help summary:focus-visible { outline:3px solid #37858c; outline-offset:3px; }
+.import-help { margin-top:21px; border:1px solid #dce7e6; border-radius:12px; background:#f5f8f8; color:#27434a; }
+.import-help summary { cursor:pointer; padding:14px 19px; font-size:13px; font-weight:750; }
+.import-help p { margin:0; padding:0 19px 17px; font-size:13px; line-height:1.6; color:#526b6b; }
+.import-controls { border-top:1px solid #e7eeeb; padding-top:24px; margin-top:28px; }
+.import-controls h3 { grid-column:1/-1; font-size:17px; letter-spacing:-.02em; margin:0; }
+@media(max-width:520px) { .import-panel .drop { min-height:235px; padding:25px 16px; } .import-heading-row { display:block; } .import-heading-row .quiet { display:block; max-width:none; text-align:left; margin-top:8px; } .upload-actions button { width:100%; justify-content:center !important; } .upload-actions #submit { gap:14px; } }
 @media (max-width: 800px) {
   .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .zonelegend { grid-template-columns: repeat(2, minmax(0, 1fr)); }
