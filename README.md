@@ -15,7 +15,11 @@ Identité visuelle : une pierre de vision et un chemin stylisés dans le logo SV
 
 Node.js 22+ recommandé. Ouvrir l’adresse Vite affichée, puis choisir un GPX ou TCX de 50 Mio maximum **par fichier**. Les fichiers restent en mémoire et ne sont pas envoyés à un service externe. Après rechargement, il faut les sélectionner à nouveau. Sur certains mobiles, les très gros exports peuvent dépasser la mémoire disponible. L’application statique est également accessible après publication sous /palentir/ sans exécuter de serveur Python.
 
-Vérifications : `npm run typecheck`, `npm test` et `npm run build`. Le workflow exécute ces étapes sur pull request et sur main ; il déploie uniquement `dist` si tout réussit. Pour activer le site : GitHub → Settings → Pages → Source → GitHub Actions. Adresse attendue : https://pourroyjean.github.io/palentir/.
+Vérifications : `npm run typecheck`, `npm test` et `npm run build`. Le workflow **CI** vérifie ces étapes sur chaque pull request et push vers `main`. Un second workflow **Deploy to GitHub Pages** reconstruit et publie uniquement `dist` pour le commit de `main` qui vient de réussir la CI. La source Pages est GitHub Actions. Site : https://pourroyjean.github.io/palentir/.
+
+## Contribuer et déployer
+
+Travailler sur une branche dédiée, ouvrir une PR vers `main` et attendre la vérification `CI / verify`. Les PR ne sont jamais déployées. Après revue et fusion, la CI du nouveau commit sur `main` déclenche le déploiement Pages si elle réussit. Une CI rouge ne doit pas être contournée. La CI seule n’interdit pas les pushes directs : pour les bloquer, configurer une règle de protection de `main` sur GitHub avec PR et contrôle `CI / verify` obligatoires. Les consignes pour les futurs changements sont dans `.agents/skills/palantir-development/SKILL.md`.
 
 ## Méthode
 
