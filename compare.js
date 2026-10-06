@@ -215,7 +215,7 @@ document.querySelector('#load-example').addEventListener('click', async event =>
   const button = event.currentTarget;
   button.disabled = true;
   const versions = {first: clearSource('first'), second: clearSource('second')};
-  setStatus('Téléchargement des deux traces publiques…');
+  setStatus('Chargement des deux traces Saint-Mens…');
   try {
     const files = await Promise.all(EXAMPLE_TRACKS.map(track =>
       fetchExampleFile(track.filename, import.meta.env.BASE_URL)));
