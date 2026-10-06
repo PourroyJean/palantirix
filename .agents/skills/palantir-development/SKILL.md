@@ -1,15 +1,15 @@
 ---
 name: palantir-development
-description: "Développer Palantir (analyse GPX/TCX 100 % navigateur) et gérer ses branches, PR, CI GitHub Actions et déploiements Pages. À utiliser pour toute modification de code, tests ou workflow de ce dépôt."
+description: "Développer Palentirix (analyse GPX/TCX 100 % navigateur) et gérer ses branches, PR, CI GitHub Actions et déploiements Pages. À utiliser pour toute modification de code, tests ou workflow de ce dépôt."
 ---
 
-# Développement de Palantir
+# Développement de Palentirix
 
 S’applique uniquement au dépôt PourroyJean/palentir. Respecter les instructions du dépôt et la demande de l’utilisateur ; ce skill n’autorise pas à pousser, ouvrir ou fusionner une PR sans demande ou accord adapté.
 
 ## Architecture et confidentialité
 
-- Vite + TypeScript sans framework UI ; interface DOM/SVG dans `app.js`, `compare.js`, `index.html` et `styles.css`. Analyse et comparaison dans `src/`, parsing XML à flux et calcul dans un Web Worker. Ne pas réintroduire d’API serveur, de préchargement local ni de stockage des activités.
+- Vite + TypeScript sans framework UI ; interface DOM/SVG et cartes Leaflet/OpenStreetMap dans `app.js`, `compare.js`, `map.js`, `index.html` et `styles.css`. Analyse et comparaison dans `src/`, parsing XML à flux et calcul dans un Web Worker. Ne pas réintroduire d’API serveur, de préchargement local ni de stockage des activités. Les tuiles sont chargées automatiquement pour les zones affichées, jamais les fichiers GPX/TCX ; conserver l’attribution et le texte de confidentialité.
 - Garder la base Vite `/palentir/`. Les fichiers GPX/TCX privés, configurations locales, références réelles et export `dist/` ne doivent pas entrer dans Git. Fixtures synthétiques seulement dans `tests/fixtures/` ; test de parité sur données réelles uniquement via variables locales facultatives.
 - Préserver les règles de calcul (capteurs absents ≠ zéro mesuré, maintien de la dernière mesure, intervalles > 30 s exclus, ruptures GPX, bornes interpolées et fenêtres d’allure). Ajouter ou adapter un test pour tout changement de calcul ou de sérialisation worker/UI.
 

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Palantir — Analyse GPX/TCX</title>
+  <title>Palentirix — Analyse GPX/TCX</title>
   <meta name="theme-color" content="#152d35">
   <link rel="icon" href="./logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="./styles.css">
@@ -11,9 +11,9 @@
   <script type="module" src="/compare.js"></script>
 </head>
 <body>
-  <header class="masthead"><div class="brand"><img class="brand-mark" src="./logo.svg" alt="" width="34" height="34"> PALANTIR <span class="brand-sub">/ Courez, pauvres fous</span></div><span class="local">● 100 % local</span></header>
+  <header class="masthead"><div class="brand"><img class="brand-mark" src="./logo.svg" alt="" width="34" height="34"> PALENTIRIX <span class="brand-sub">/ Courez, pauvres fous</span></div><span class="local">● Calcul local · cartes OpenStreetMap</span></header>
   <main>
-    <section class="intro"><div><p class="eyebrow">PALANTIR / OBSERVATOIRE SPORTIF</p><h1>Un coureur n’est jamais en retard.<br><em>Il arrive à l’allure prévue.</em></h1><p class="lead">Importez une activité GPX ou TCX pour comprendre votre effort, vos zones cardiaques et vos données de puissance. Aucun fichier n’est conservé.</p></div><div class="intro-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><img class="hero-logo" src="./logo.svg" alt="" width="154" height="154"></div></section>
+    <section class="intro"><div><p class="eyebrow">PALENTIRIX / OBSERVATOIRE SPORTIF</p><h1>Un coureur n’est jamais en retard.<br><em>Il arrive à l’allure prévue.</em></h1><p class="lead">Importez une activité GPX ou TCX pour comprendre votre effort, vos zones cardiaques et vos données de puissance. Aucun fichier n’est conservé.</p></div><div class="intro-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><img class="hero-logo" src="./logo.svg" alt="" width="154" height="154"></div></section>
     <nav class="tabs" aria-label="Mode d’analyse"><button class="tab active" type="button" data-tab="single" aria-selected="true">Une trace</button><button class="tab" type="button" data-tab="compare" aria-selected="false">Comparer deux traces</button></nav>
     <div id="single-view">
     <form id="form" class="panel import-panel" novalidate>
@@ -27,7 +27,7 @@
     <section id="result" class="result" hidden>
       <div class="section-heading result-heading"><div><span class="step">02 / RÉSULTATS</span><h2 id="activity-title">Vue d’ensemble</h2></div><span id="metadata" class="quiet"></span></div>
       <div id="route-kpis" class="route-kpis" aria-label="Parcours et dénivelé"></div>
-      <article class="panel grade-panel"><div class="section-heading"><div><span class="step">PENTE / PARCOURS</span><h3>Profil des pentes</h3></div><span class="quiet">Fenêtre glissante · 100 m</span></div><div id="grade-map" class="grade-map"></div><div id="grade-kpis" class="grade-kpis" aria-label="Répartition de la distance par pente"></div><p id="grade-note" class="footnote"></p></article>
+      <article class="panel grade-panel"><div class="section-heading"><div><span class="step">PENTE / PARCOURS</span><h3>Profil des pentes</h3></div><span class="quiet">Fenêtre glissante · 100 m</span></div><p class="map-privacy">Fond OpenStreetMap chargé automatiquement : la zone affichée est transmise au fournisseur de tuiles, jamais le fichier GPX ni les mesures.</p><p id="grade-map-error" class="map-error" role="status" hidden>Tuiles OpenStreetMap indisponibles : les tracés restent affichés, mais le fond de carte nécessite une connexion.</p><p id="grade-map-placeholder" class="map-placeholder" hidden>Aucun parcours GPS exploitable pour la carte des pentes.</p><div class="grade-map-wrap"><div id="grade-osm" class="osm-map" role="region" aria-label="Parcours GPS coloré selon la pente sur fond OpenStreetMap" hidden></div><div class="grade-legend"><span><i style="background:#24b964"></i>Descente · &lt; −5 %</span><span><i style="background:#4b91dc"></i>Modéré · −5 à +5 %</span><span><i style="background:#ee911d"></i>Montée · +5 à +10 %</span><span><i style="background:#d92d50"></i>Forte montée · ≥ +10 %</span><span><i style="background:#96a6a0"></i>Non classé</span></div></div><div id="grade-kpis" class="grade-kpis" aria-label="Répartition de la distance par pente"></div><p id="grade-note" class="footnote"></p></article>
       <div id="cards" class="cards"></div>
       <div class="columns"><article class="panel zone-panel"><div class="section-heading"><div><span class="step">RÉPARTITION</span><h3>Vos cinq zones cardiaques</h3></div><span class="quiet">Maintien de la dernière FC connue</span></div><div id="zonebar" class="zonebar" role="img"></div><div id="zonelegend" class="zonelegend"></div><p class="footnote">Un intervalle de plus de 30 s ou sans FC reste « sans couverture » ; les zones ne nécessitent pas de puissance mesurée.</p></article><article class="panel coverage-panel"><span class="step">QUALITÉ DES DONNÉES</span><h3>Couverture</h3><div id="coverage"></div></article></div>
       <article class="panel charts-panel"><div class="section-heading"><div><span class="step">ÉVOLUTION</span><h3>Au fil de l’activité</h3></div><span class="quiet">Temps écoulé · lacunes non interpolées</span></div><div id="charts"></div></article>
@@ -50,7 +50,7 @@
         <button type="submit" id="compare-submit" class="compare-action" disabled>Calculer les performances ↗</button>
       </form>
       <div id="compare-status" class="status" role="status" aria-live="polite"></div>
-      <article class="panel compare-map-panel"><div class="section-heading"><div><span class="step">PARCOURS</span><h3>Traces superposées</h3></div><span class="quiet">Projection GPS · sans fond de carte externe</span></div><div id="compare-map" class="compare-map"></div><div id="compare-map-legend" class="compare-map-legend"></div><p class="footnote">Traces entières atténuées, sélection bleue pleine (1) et orange pointillée (2). La carte se met à jour avant le calcul.</p></article>
+      <article class="panel compare-map-panel"><div class="section-heading"><div><span class="step">PARCOURS</span><h3>Traces superposées</h3></div><span class="quiet">Fond OpenStreetMap</span></div><p class="map-privacy">La zone affichée est transmise au fournisseur de tuiles, jamais les fichiers GPX ni les mesures.</p><p id="compare-map-error" class="map-error" role="status" hidden>Tuiles OpenStreetMap indisponibles : les tracés restent affichés, mais le fond de carte nécessite une connexion.</p><p id="compare-map-placeholder" class="map-placeholder">Chargez une activité GPX pour voir son parcours.</p><div id="compare-osm" class="osm-map" role="region" aria-label="Parcours GPX bleu et orange superposés sur fond OpenStreetMap" hidden></div><div id="compare-map-legend" class="compare-map-legend"></div><p class="footnote">Traces entières atténuées, sélection bleue pleine (1) et orange pointillée (2). La carte se met à jour avant le calcul.</p></article>
       <section id="compare-result" class="result" hidden>
         <div class="section-heading"><div><span class="step">02 / COMPARAISON</span><h2>Vos performances</h2></div><span class="quiet" id="compare-subtitle"></span></div>
         <article class="panel compare-verdict" id="compare-verdict"></article>
@@ -61,6 +61,6 @@
       </section>
     </div>
   </main>
-  <footer>PALANTIR <span>— Analyse locale, sans compte ni service externe.</span></footer>
+  <footer>PALENTIRIX <span>— Calcul local sans compte ; tuiles de carte OpenStreetMap externes.</span></footer>
 </body>
 </html>
