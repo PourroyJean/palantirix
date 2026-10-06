@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-labelledby="title desc">
+  <title id="title">Palantir</title>
+  <desc id="desc">Pierre de vision stylisée, traversée d'une ligne de cheminement</desc>
+  <defs>
+    <radialGradient id="stone" cx="36%" cy="28%" r="77%">
+      <stop stop-color="#356e72"/>
+      <stop offset=".52" stop-color="#183e48"/>
+      <stop offset="1" stop-color="#10272f"/>
+    </radialGradient>
+    <linearGradient id="light" x1="16%" y1="12%" x2="85%" y2="90%">
+      <stop stop-color="#fff4d4"/>
+      <stop offset=".55" stop-color="#d7c182"/>
+      <stop offset="1" stop-color="#8bbcb1"/>
+    </linearGradient>
+  </defs>
+  <circle cx="64" cy="64" r="60" fill="url(#stone)"/>
+  <circle cx="64" cy="64" r="56" fill="none" stroke="#d9c88f" stroke-opacity=".78" stroke-width="1.5"/>
+  <circle cx="64" cy="64" r="45" fill="none" stroke="#a4c8bb" stroke-opacity=".4" stroke-width="1"/>
+  <path d="M29 74C42 65 47 83 60 65s22-19 39-37" fill="none" stroke="url(#light)" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round"/>
+  <circle cx="31" cy="73" r="4" fill="#a8d3c5"/>
+  <circle cx="60" cy="65" r="3.2" fill="#f7e3ac"/>
+  <path d="M94 22v12M88 28h12" stroke="#fff0c5" stroke-width="2.4" stroke-linecap="round"/>
+  <circle cx="93" cy="29" r="3.3" fill="#fff1c5"/>
+  <path d="M40 43l4-4m34 42 4-4" fill="none" stroke="#9ac3b6" stroke-opacity=".7" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

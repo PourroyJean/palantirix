@@ -1,0 +1,9 @@
+__pycache__/
+*.py[cod]
+.DS_Store
+*.[gG][pP][xX]
+*.[tT][cC][xX]
+*.[fF][iI][tT]
+.env
+.env.*
+local-traces.json

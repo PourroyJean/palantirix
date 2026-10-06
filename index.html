@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Palantir — Analyse GPX/TCX</title>
+  <meta name="theme-color" content="#152d35">
+  <link rel="icon" href="/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/styles.css">
+  <script src="/app.js" defer></script>
+  <script src="/compare.js" defer></script>
+</head>
+<body>
+  <header class="masthead"><div class="brand"><img class="brand-mark" src="/logo.svg" alt="" width="34" height="34"> PALANTIR <span class="brand-sub">/ analyse d’activité</span></div><span class="local">● 100 % local</span></header>
+  <main>
+    <section class="intro"><div><p class="eyebrow">PALANTIR / OBSERVATOIRE SPORTIF</p><h1>Vos traces,<br><em>en perspective.</em></h1><p class="lead">Importez une activité GPX ou TCX pour comprendre votre effort, vos zones cardiaques et vos données de puissance. Aucun fichier n’est conservé.</p></div><div class="intro-art" aria-hidden="true"><div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div><img class="hero-logo" src="/logo.svg" alt="" width="154" height="154"></div></section>
+    <nav class="tabs" aria-label="Mode d’analyse"><button class="tab active" type="button" data-tab="single" aria-selected="true">Une trace</button><button class="tab" type="button" data-tab="compare" aria-selected="false">Comparer deux traces</button></nav>
+    <div id="single-view">
+    <form id="form" class="panel" novalidate>
+      <div class="section-heading"><div><span class="step">01 / IMPORT</span><h2>Votre activité</h2></div><span class="quiet">GPX ou TCX · 50 Mio max.</span></div>
+      <label class="drop" for="file"><span class="drop-icon">↥</span><strong id="filename">Choisir un fichier d’activité</strong><small>Glissez-déposez ici, ou cliquez pour parcourir</small><input id="file" name="file" type="file" accept=".gpx,.tcx,application/gpx+xml,application/xml,text/xml" required></label>
+      <div class="controls"><label>Sport<select name="sport" id="sport"><option value="course">Course à pied</option><option value="velo">Vélo</option></select></label><label>Début Z2 <span>bpm</span><input name="z2_min" id="z2" type="number" min="1" max="297" step="1" value="136" required></label><label>Début Z3 <span>bpm</span><input name="z3_min" id="z3" type="number" min="2" max="298" step="1" value="152" required></label><label>Début Z4 <span>bpm</span><input name="z4_min" id="z4" type="number" min="3" max="299" step="1" value="162" required></label><label>Début Z5 <span>bpm</span><input name="z5_min" id="z5" type="number" min="4" max="300" step="1" value="170" required></label><label id="cadence-setting" class="cadence-setting">Cadence de course<select name="cadence_mode" id="cadence-mode"><option value="double">Demi-cadence du GPX → ×2</option><option value="direct">Déjà en pas/min → ×1</option></select></label><button id="submit" type="submit">Analyser l’activité <span>↗</span></button></div>
+    </form>
+    <div id="status" class="status" role="status" aria-live="polite"></div>
+    <section id="result" class="result" hidden>
+      <div class="section-heading result-heading"><div><span class="step">02 / RÉSULTATS</span><h2 id="activity-title">Vue d’ensemble</h2></div><span id="metadata" class="quiet"></span></div>
+      <div id="cards" class="cards"></div>
+      <div class="columns"><article class="panel zone-panel"><div class="section-heading"><div><span class="step">RÉPARTITION</span><h3>Vos cinq zones cardiaques</h3></div><span class="quiet">Maintien de la dernière FC connue</span></div><div id="zonebar" class="zonebar" role="img"></div><div id="zonelegend" class="zonelegend"></div><p class="footnote">Un intervalle de plus de 30 s ou sans FC reste « sans couverture » ; les zones ne nécessitent pas de puissance mesurée.</p></article><article class="panel coverage-panel"><span class="step">QUALITÉ DES DONNÉES</span><h3>Couverture</h3><div id="coverage"></div></article></div>
+      <article class="panel charts-panel"><div class="section-heading"><div><span class="step">ÉVOLUTION</span><h3>Au fil de l’activité</h3></div><span class="quiet">Temps écoulé · lacunes non interpolées</span></div><div id="charts"></div></article>
+      <div id="warnings" class="warnings" aria-live="polite"></div>
+      <p class="method">Les moyennes sont pondérées par le temps couvert. Chaque mesure représente l’intervalle jusqu’au point suivant (30 s maximum). Les maxima sont calculés sur les échantillons valides, y compris le dernier point.</p>
+    </section>
+    </div>
+    <div id="compare-view" hidden>
+      <form id="compare-form" class="panel" novalidate>
+        <div class="section-heading"><div><span class="step">01 / DEUX ACTIVITÉS</span><h2>Choisir les segments</h2></div><span class="quiet">Deux GPX · 50 Mio chacun</span></div>
+        <div class="compare-files">
+          <div class="compare-file"><strong>Trace 1 · référence</strong><p id="first-source" class="source-state" role="status">Chargement de la trace par défaut…</p><label>Choisir un autre GPX<input type="file" name="reference_file" accept=".gpx,application/gpx+xml"></label><label>Cadence<select name="cadence_first"><option value="double">Demi-cadence → ×2</option><option value="direct">Déjà en pas/min → ×1</option></select></label>
+            <div id="first-selector" class="segment-selector" hidden><div class="segment-head"><strong>Segment de la trace 1</strong><span id="first-length"></span></div><div class="dual-slider"><div id="first-selected-track" class="selected-track"></div><input id="first-start-range" type="range" min="0" value="0" aria-label="Début de la trace 1"><input id="first-end-range" type="range" min="0" value="0" aria-label="Fin de la trace 1"></div><div class="bound-controls"><label>Début · km<input id="first-start" type="number" min="0" step="0.01" inputmode="decimal"></label><label>Fin · km<input id="first-end" type="number" min="0" step="0.01" inputmode="decimal"></label></div></div>
+          </div>
+          <div class="compare-file"><strong>Trace 2 · à comparer</strong><p id="second-source" class="source-state" role="status">Chargement de la trace par défaut…</p><label>Choisir un autre GPX<input type="file" name="challenger_file" accept=".gpx,application/gpx+xml"></label><label>Cadence<select name="cadence_second"><option value="double">Demi-cadence → ×2</option><option value="direct">Déjà en pas/min → ×1</option></select></label>
+            <div id="second-selector" class="segment-selector" hidden><div class="segment-head"><strong>Segment de la trace 2</strong><span id="second-length"></span></div><div class="dual-slider"><div id="second-selected-track" class="selected-track"></div><input id="second-start-range" type="range" min="0" value="0" aria-label="Début de la trace 2"><input id="second-end-range" type="range" min="0" value="0" aria-label="Fin de la trace 2"></div><div class="bound-controls"><label>Début · km<input id="second-start" type="number" min="0" step="0.01" inputmode="decimal"></label><label>Fin · km<input id="second-end" type="number" min="0" step="0.01" inputmode="decimal"></label></div></div>
+          </div>
+        </div>
+        <p class="footnote">Déplacez les deux bornes de chaque trace : les portions bleue (trace 1) et orange (trace 2) suivent vos sélections. Les tronçons peuvent être différents ; les chronos seront présentés avec réserve.</p>
+        <button type="submit" id="compare-submit" class="compare-action" disabled>Calculer les performances ↗</button>
+      </form>
+      <div id="compare-status" class="status" role="status" aria-live="polite"></div>
+      <article class="panel compare-map-panel"><div class="section-heading"><div><span class="step">PARCOURS</span><h3>Traces superposées</h3></div><span class="quiet">Projection GPS · sans fond de carte externe</span></div><div id="compare-map" class="compare-map"></div><div id="compare-map-legend" class="compare-map-legend"></div><p class="footnote">Traces entières atténuées, sélection bleue pleine (1) et orange pointillée (2). La carte se met à jour avant le calcul.</p></article>
+      <section id="compare-result" class="result" hidden>
+        <div class="section-heading"><div><span class="step">02 / COMPARAISON</span><h2>Vos performances</h2></div><span class="quiet" id="compare-subtitle"></span></div>
+        <article class="panel compare-verdict" id="compare-verdict"></article>
+        <article class="panel compare-table-panel"><h3>Face à face</h3><div class="compare-table-wrap"><table id="compare-table"><thead><tr><th>Mesure</th><th id="reference-title">Référence</th><th id="challenger-title">À comparer</th><th>Écart deuxième − première</th></tr></thead><tbody></tbody></table></div></article>
+        <article class="panel compare-hr-panel"><div class="section-heading"><div><span class="step">FRÉQUENCE CARDIAQUE</span><h3>FC des portions sélectionnées</h3></div><span class="quiet">Kilomètres depuis le départ de chaque GPX</span></div><div class="chart-mode" role="group" aria-label="Affichage du graphique de fréquence cardiaque"><button type="button" data-chart="hr" data-mode="mirror" aria-pressed="true">Miroir</button><button type="button" data-chart="hr" data-mode="overlay" aria-pressed="false">Superposé</button></div><div id="compare-hr-chart"></div><p class="footnote" id="hr-chart-method">L’axe vertical indique la FC réelle en bpm des deux côtés du minimum commun : bleu au-dessus, orange en miroir en dessous. Chaque trait fin pointillé indique la FC moyenne ; le point rouge fléché situe la FC maximale de chaque trace. Les interruptions restent visibles.</p></article>
+        <article class="panel compare-hr-panel"><div class="section-heading"><div><span class="step" id="pace-chart-eyebrow">ALLURE LOCALE</span><h3 id="pace-chart-title">Allure des portions sélectionnées</h3></div><span class="quiet" id="pace-chart-subtitle">Fenêtre mobile de 100 m · min/km</span></div><div class="chart-controls"><div class="chart-mode" role="group" aria-label="Disposition du graphique d’allure"><button type="button" data-chart="pace" data-mode="mirror" aria-pressed="true">Miroir</button><button type="button" data-chart="pace" data-mode="overlay" aria-pressed="false">Superposé</button></div><div class="chart-mode" role="group" aria-label="Unité du graphique d’allure"><button type="button" data-pace-unit="pace" aria-pressed="true">min/km</button><button type="button" data-pace-unit="speed" aria-pressed="false">km/h</button></div></div><div id="compare-pace-chart"></div><p class="footnote" id="pace-chart-method">Allure en min/km : petites valeurs en bas en superposition. En miroir, le minimum commun se trouve sur l’axe central ; les allures plus lentes s’en éloignent vers le haut en bleu et vers le bas en orange. La moyenne en mouvement (trait pointillé) peut différer de l’allure sur chrono écoulé du tableau. Les lacunes restent visibles.</p></article>
+        <div id="compare-warnings" class="warnings"></div>
+      </section>
+    </div>
+  </main>
+  <footer>PALANTIR <span>— Analyse locale, sans compte ni service externe.</span></footer>
+</body>
+</html>
