@@ -4,6 +4,10 @@ Mini-application web locale en français, sans dépendance Python externe. Pytho
 
 Identité visuelle : une pierre de vision et un chemin stylisés dans le logo SVG original (`logo.svg`). Aucun visuel de la franchise n'est utilisé.
 
+## Licence
+
+Distribué sous licence MIT (voir `LICENSE`). Vous pouvez utiliser et modifier le code, à condition de conserver la notice de droits d’auteur ; le logiciel est fourni sans garantie. La licence MIT ne confère pas de droits de marque.
+
 ## Démarrage
 
     python3 app.py
