@@ -17,6 +17,13 @@ Node.js 22+ recommandé. Ouvrir l’adresse Vite affichée, puis choisir un GPX 
 
 Dans l’onglet « Une trace », glisser-déposer le fichier dans la grande zone d’import ou utiliser « Parcourir ». Le bouton d’analyse s’active seulement pour un GPX/TCX/XML non vide de 50 Mio maximum ; sport, zones et cadence restent réglables avant le calcul. Le lien d’aide explique où trouver l’export de l’activité.
 
+### Avant d’importer
+
+- **Vérifiez les timestamps** : une trace GPS peut contenir des coordonnées et de l’altitude sans heure par point. Sans timestamps exploitables, Palentirix ne peut calculer ni durée ni allure et refuse la comparaison. Le GPX d’un parcours récupéré depuis l’activité d’une autre personne peut différer de l’export de l’activité d’origine, même si le site affiche des allures. Demandez un export horodaté de l’activité plutôt que d’attribuer un temps fictif aux points.
+- **Vérifiez les capteurs présents** : FC, cadence et puissance sont facultatives. Si un champ manque, ses métriques affichent « — » ; ce n’est pas un zéro mesuré. Des valeurs présentes mais interrompues peuvent aussi réduire leur durée de couverture.
+- **Cadence de course** : choisissez ×2 seulement si le champ exporté compte des cycles de deux pas par minute ; choisissez ×1 s’il compte déjà des pas par minute. Le GPX/TCX n’indique pas toujours cette convention. Vérifiez-la auprès de la montre ou de l’application d’origine ; l’application ne peut pas la deviner de façon fiable.
+- **Format et confidentialité** : l’analyse solo accepte GPX et TCX ; la comparaison accepte deux GPX horodatés avec coordonnées. Vos imports manuels sont traités dans le navigateur, sans stockage par Palentirix. Le fond OpenStreetMap charge des tuiles pour la zone affichée ; contrairement aux imports manuels, les deux exemples Saint Mens sont déjà des fichiers publics du dépôt.
+
 Vérifications : `npm run typecheck`, `npm test` et `npm run build`. Le workflow **CI** vérifie ces étapes sur chaque pull request et push vers `main`. Un second workflow **Deploy to GitHub Pages** reconstruit et publie uniquement `dist` pour le commit de `main` qui vient de réussir la CI. La source Pages est GitHub Actions. Site : https://pourroyjean.github.io/palentirix/.
 
 ## Contribuer et déployer
