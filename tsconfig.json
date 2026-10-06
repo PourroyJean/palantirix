@@ -13,7 +13,8 @@
     "skipLibCheck": true,
     "types": [
       "vitest/globals",
-      "node"
+      "node",
+      "vite/client"
     ],
     "allowImportingTsExtensions": true
   },
