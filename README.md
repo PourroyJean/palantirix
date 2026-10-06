@@ -19,7 +19,7 @@ Vérifications : `npm run typecheck`, `npm test` et `npm run build`. Le workflow
 
 ## Contribuer et déployer
 
-Travailler sur une branche dédiée, ouvrir une PR vers `main` et attendre la vérification `CI / verify`. Les PR ne sont jamais déployées. Après revue et fusion, la CI du nouveau commit sur `main` déclenche le déploiement Pages si elle réussit. Une CI rouge ne doit pas être contournée. La CI seule n’interdit pas les pushes directs : pour les bloquer, configurer une règle de protection de `main` sur GitHub avec PR et contrôle `CI / verify` obligatoires. Les consignes pour les futurs changements sont dans `.agents/skills/palantir-development/SKILL.md`.
+Travailler sur une branche dédiée, ouvrir une PR vers `main` et attendre la vérification `verify`. Les PR ne sont jamais déployées. Après revue et fusion, la CI du nouveau commit sur `main` déclenche le déploiement Pages si elle réussit. Une CI rouge ne doit pas être contournée. La CI seule n’interdit pas les pushes directs : pour les bloquer, configurer une règle de protection de `main` sur GitHub avec PR et contrôle `verify` obligatoires. Les consignes pour les futurs changements sont dans `.agents/skills/palantir-development/SKILL.md`.
 
 ## Méthode
 
