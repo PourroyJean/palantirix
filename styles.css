@@ -157,6 +157,36 @@
 .hr-chart-peak-label { fill:#fff; font-size:11px; font-weight:800; font-variant-numeric:tabular-nums; }
 .hr-chart-axis-title { fill:#465566; font-size:12px; font-weight:700; }
 .compare-hr-panel .chart-empty { padding:12px 0; }
+.compare-charts-panel { margin:14px 0; padding:18px 26px 22px; }
+.compare-chart-legend { display:flex; align-items:center; gap:8px 20px; flex-wrap:wrap; padding:4px 0 15px; font-size:12px; font-weight:750; border-bottom:1px solid #e9eee9; }
+.compare-chart-legend .first { color:#176bc8; }
+.compare-chart-legend .second { color:#c3580d; }
+.compare-chart-legend .quiet { margin-left:auto; font-weight:400; }
+.compare-chart-section { padding-top:17px; }
+.compare-chart-section + .compare-chart-section { margin-top:11px; border-top:1px solid #e9eee9; }
+.compare-chart-heading { display:flex; align-items:center; justify-content:space-between; gap:10px 18px; flex-wrap:wrap; margin-bottom:10px; }
+.compare-chart-heading h3 { margin:4px 0 0; }
+.compare-chart-heading .quiet { display:block; margin-top:4px; }
+.compare-chart-heading .chart-mode { margin:0; }
+.compare-chart-heading .chart-controls { margin-left:auto; justify-content:flex-end; }
+.compare-chart-section .hr-chart-info { margin:0 0 6px; }
+.chart-method { margin:5px 0 0; color:#7b8a87; font-size:11px; line-height:1.5; }
+.chart-method summary { cursor:pointer; font-weight:700; }
+.chart-method p { margin:5px 0; }
+.chart-cursor { pointer-events:none; }
+.chart-cursor-line { stroke:#203b4e; stroke-width:1.5; stroke-dasharray:5 4; }
+.chart-cursor-km { fill:#203b4e; font-weight:850; font-size:12px; paint-order:stroke; stroke:#f7f8fb; stroke-width:4px; stroke-linejoin:round; }
+.chart-plot { position:relative; }
+.chart-plot svg { display:block; }
+.chart-plot svg:not(:hover) { outline:0; }
+.chart-cursor-readout { position:absolute; top:15%; z-index:3; display:grid; gap:4px; width:max-content; max-width:calc(100% - 16px); padding:8px 10px; border:1px solid #cbd8e1; border-radius:7px; background:#fff; box-shadow:0 2px 8px #203b4e3b; pointer-events:none; font-size:12px; font-weight:750; white-space:nowrap; }
+.chart-cursor-readout[hidden] { display:none !important; }
+.chart-cursor-readout strong { color:#203b4e; }
+.chart-cursor-first { color:#176bc8; }
+.chart-cursor-second { color:#c3580d; }
+.chart-cursor-hit { cursor:crosshair; touch-action:none; }
+.chart-cursor-hit:focus-visible { outline:3px solid #237d96; }
+@media(max-width:700px) { .compare-charts-panel { padding:16px; } .compare-chart-legend .quiet { margin-left:0; flex-basis:100%; } .compare-chart-heading { align-items:flex-start; } .compare-chart-heading .chart-controls { margin-left:0; justify-content:flex-start; } .chart-cursor-readout { top:0; transform:translateY(-100%); } }
 
 /* Palentirix identity: a quiet viewing stone rather than a generic sport icon. */
 .masthead { background:#f7f7f1; border-bottom-color:#d8e1d8; }

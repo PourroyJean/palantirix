@@ -1,5 +1,6 @@
 import {engine} from './src/client.ts';
 import {showCompareMap,closeMap,refreshMap} from './map.js';
+import {clampDistance,distanceAtX,xAtDistance,heartRateAt,paceAt} from './src/chart-cursor.ts';
 const compareForm = document.querySelector('#compare-form');
 const compareResult = document.querySelector('#compare-result');
 const compareStatus = document.querySelector('#compare-status');
@@ -9,6 +10,9 @@ const sources = {first: null, second: null};
 const requestVersions = {first: 0, second: 0};
 let selectionVersion = 0;
 let chartPayload = null;
+let cursorDistance = null;
+let cursorPinned = false;
+let cursorFrame = 0;
 const chartModes = {hr: 'mirror', pace: 'mirror'};
 let paceUnit = 'pace';
 let mapSources = [null, null];
@@ -58,6 +62,15 @@ function setStatus(message, isError = false) {
 function invalidate() {
   selectionVersion++;
   chartPayload = null;
+  cursorDistance = null;
+  cursorPinned = false;
+  cursorCharts.clear();
+  if (cursorFrame) cancelAnimationFrame(cursorFrame);
+  cursorFrame = 0;
+  document.querySelectorAll('.chart-cursor-hit').forEach(hit => {
+    hit.setAttribute('aria-valuenow', hit.getAttribute('aria-valuemin'));
+    hit.setAttribute('aria-valuetext', 'Aucun repère, flèche droite pour commencer');
+  });
   compareResult.hidden = true;
   if (compareStatus.textContent && !compareStatus.classList.contains('error')) setStatus('');
 }
@@ -294,9 +307,156 @@ function placePeakLabel(preferredX, preferredY, boxWidth, boxHeight, previous, l
   previous.push(placed);
   return placed;
 }
+
+// Each plot has its own margins but shares the same absolute GPX distance.
+const cursorCharts = new Map();
+function paintCursor() {
+  cursorFrame = 0;
+  const cursorOut = cursorDistance === null || !chartPayload || compareResult.hidden;
+  for (const [kind, chart] of cursorCharts) {
+    const {group, line, kilometre, firstValue, secondValue, readout, svg, plot, bounds, first, second} = chart;
+    if (cursorOut) {
+      group.setAttribute('visibility', 'hidden');
+      readout.hidden = true;
+      continue;
+    }
+    group.setAttribute('visibility', 'visible');
+    readout.hidden = false;
+    const {left, right, start, end} = bounds;
+    const px = xAtDistance(cursorDistance, left, right, start, end);
+    line.setAttribute('x1', String(px)); line.setAttribute('x2', String(px));
+    kilometre.setAttribute('x', String(Math.max(left + 43, Math.min(right - 43, px))));
+    kilometre.textContent = compareKm.format(cursorDistance / 1000) + ' km';
+    readout.querySelector('strong').textContent = kilometre.textContent + (cursorPinned ? ' · fixé' : '');
+    const tracks = [first, second];
+    for (const [index, label] of [firstValue, secondValue].entries()) {
+      const track = tracks[index];
+      const data = kind === 'hr' ? track.hr_series : track.pace_series;
+      const v = kind === 'hr'
+        ? heartRateAt(data.segments, data.isolated, cursorDistance, track.start_m, track.end_m)
+        : paceAt(data.segments, cursorDistance, track.start_m, track.end_m);
+      label.textContent = 'Trace ' + (index + 1) + ' : ' + (v === null ? '—' : kind === 'hr'
+        ? measurement(v, 'bpm') : paceUnit === 'speed' ? speedText(speedFromPace(v)) + ' km/h' : paceText(v) + ' min/km');
+    }
+    const svgWidth = svg.getBoundingClientRect().width;
+    const available = Math.max(8, plot.clientWidth - readout.offsetWidth - 8);
+    readout.style.left = Math.max(8, Math.min(available, px / 1000 * svgWidth + 12)) + 'px';
+  }
+}
+function scheduleCursor() {
+  if (!cursorFrame) cursorFrame = requestAnimationFrame(paintCursor);
+}
+// The readout's position is measured in CSS pixels, not SVG viewBox units.
+// Reposition it when the layout changes (e.g. rotating a phone).
+window.addEventListener('resize', scheduleCursor);
+function attachCursor(svg, kind, first, second, left, right, top, bottom, start, end) {
+  const group = svgNode('g', {class: 'chart-cursor', visibility: 'hidden', 'aria-hidden': 'true'});
+  const line = svgNode('line', {class: 'chart-cursor-line', y1: top, y2: bottom});
+  const kilometre = svgNode('text', {class: 'chart-cursor-km', y: top + 14, 'text-anchor': 'middle'});
+  group.append(line, kilometre);
+  svg.append(group);
+  const plot = node('div', 'chart-plot');
+  const readout = node('div', 'chart-cursor-readout');
+  readout.hidden = true;
+  readout.style.left = '8px';
+  const firstValue = node('span', 'chart-cursor-first');
+  const secondValue = node('span', 'chart-cursor-second');
+  readout.append(node('strong'), firstValue, secondValue);
+  plot.append(svg, readout);
+  cursorCharts.set(kind, {group, line, kilometre, plot, svg, readout, firstValue, secondValue,
+    bounds: {left, right, start, end}, first, second});
+  const hit = svgNode('rect', {x: left, y: top, width: right - left, height: bottom - top,
+    fill: 'transparent', class: 'chart-cursor-hit', tabindex: '0', role: 'slider',
+    'aria-label': 'Balayage synchronisé en kilomètres GPX · ' + (kind === 'hr' ? 'FC' : 'allure'),
+    'aria-valuemin': (start / 1000).toFixed(3), 'aria-valuemax': (end / 1000).toFixed(3),
+    'aria-valuenow': ((cursorDistance ?? start) / 1000).toFixed(3)});
+  svg.append(hit);
+  const setFromEvent = event => {
+    const matrix = svg.getScreenCTM();
+    if (!matrix) return;
+    // getScreenCTM handles responsive SVG letterboxing and CSS layout.
+    const px = svg.createSVGPoint();
+    px.x = event.clientX; px.y = event.clientY;
+    const localX = px.matrixTransform(matrix.inverse()).x;
+    cursorDistance = distanceAtX(localX, left, right, start, end);
+    updateCursorAccessibility(); scheduleCursor();
+  };
+  let ignoreTouchClick = false;
+  hit.addEventListener('pointermove', event => {
+    if (!cursorPinned) setFromEvent(event);
+  });
+  hit.addEventListener('pointerdown', event => {
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+      ignoreTouchClick = true;
+      hit.setPointerCapture(event.pointerId);
+      cursorPinned = false;
+      setFromEvent(event);
+    }
+  });
+  hit.addEventListener('pointerup', event => {
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+      if (hit.hasPointerCapture(event.pointerId)) hit.releasePointerCapture(event.pointerId);
+      // Touch is a position gesture, not the mouse click-to-pin toggle.
+      event.stopPropagation();
+      setTimeout(() => { ignoreTouchClick = false; }, 500);
+    }
+  });
+  hit.addEventListener('pointercancel', event => {
+    if (event.pointerType === 'touch' && hit.hasPointerCapture(event.pointerId))
+      hit.releasePointerCapture(event.pointerId);
+  });
+  hit.addEventListener('click', event => {
+    if (ignoreTouchClick || event.pointerType === 'touch') { ignoreTouchClick = false; return; }
+    // A keyboard-generated click has no pointer position; keep the distance
+    // established by the arrow/Home/End keys instead of jumping to x=0.
+    if (event.detail === 0) {
+      if (cursorDistance === null) cursorDistance = start;
+      cursorPinned = !cursorPinned;
+      updateCursorAccessibility(); scheduleCursor();
+      return;
+    }
+    if (cursorPinned) cursorPinned = false;
+    else { setFromEvent(event); cursorPinned = true; }
+    updateCursorAccessibility(); scheduleCursor();
+  });
+  hit.addEventListener('keydown', event => {
+    if (!['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Escape'].includes(event.key)) return;
+    event.preventDefault();
+    if (event.key === 'Escape') { cursorDistance = null; cursorPinned = false; }
+    else {
+      const current = cursorDistance ?? start;
+      cursorDistance = event.key === 'Home' ? start : event.key === 'End' ? end :
+        clampDistance(current + (event.key === 'ArrowRight' ? 10 : -10), start, end);
+      cursorPinned = true;
+    }
+    updateCursorAccessibility(); scheduleCursor();
+  });
+  updateCursorAccessibility(); scheduleCursor();
+  return plot;
+}
+function updateCursorAccessibility() {
+  document.querySelectorAll('.chart-cursor-hit').forEach(hit => {
+    if (cursorDistance !== null) {
+      hit.setAttribute('aria-valuenow', (cursorDistance / 1000).toFixed(3));
+      hit.setAttribute('aria-valuetext', compareKm.format(cursorDistance / 1000) + ' km' + (cursorPinned ? ', position fixée' : ''));
+    } else {
+      hit.setAttribute('aria-valuenow', hit.getAttribute('aria-valuemin'));
+      hit.setAttribute('aria-valuetext', 'Aucun repère, flèche droite pour commencer');
+    }
+  });
+}
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && cursorDistance !== null && !compareResult.hidden) {
+    cursorDistance = null; cursorPinned = false;
+    updateCursorAccessibility(); scheduleCursor();
+  }
+});
 function renderHeartRateChart(first, second, minimum) {
   const host = document.querySelector('#compare-hr-chart');
   host.replaceChildren();
+  cursorCharts.delete('hr');
   const overlay = chartModes.hr === 'overlay';
   document.querySelector('#hr-chart-method').textContent = overlay
     ? 'Superposition sur une seule échelle de FC réelle en bpm : bleu et orange au même niveau pour une même FC. Les moyennes et maxima restent indiqués ; les lacunes ne sont pas reliées.'
@@ -323,14 +483,11 @@ function renderHeartRateChart(first, second, minimum) {
   for (let i = 0; i < 2; i++) {
     const item = node('span', 'hr-chart-key');
     item.style.color = colors[i];
-    item.textContent = (i === 0 ? '● Trace 1 · ' : '● Trace 2 · ') +
-      (present[i] ? 'FC réelle : ' + measurement(series[i].minimum_bpm, 'bpm') +
-        ' – ' + measurement(maxima[i], 'bpm')
-        : 'FC absente');
+    item.textContent = 'Moy. ' + (i + 1) + ' : ' + measurement([first,second][i].metrics.hr.average, 'bpm');
     info.append(item);
   }
   host.append(info);
-  const width = 1000, height = 440, left = 105, right = 28, top = 30, bottom = 57;
+  const width = 1000, height = 340, left = 115, right = 28, top = 30, bottom = 57;
   const middle = (height - bottom + top) / 2;
   const half = middle - top;
   const plotBottom = height - bottom;
@@ -344,7 +501,7 @@ function renderHeartRateChart(first, second, minimum) {
     : middle + (index === 0 ? -1 : 1) * (hr - minimum) / amplitude * half;
   const meanHeights = [first, second].map((result, index) =>
     result.metrics.hr.average == null ? null : y(result.metrics.hr.average, index));
-  const svg = svgNode('svg', {viewBox: '0 0 1000 440', role: 'img',
+  const svg = svgNode('svg', {viewBox: '0 0 1000 340', role: 'group',
     'aria-label': overlay ? 'Fréquence cardiaque réelle en bpm, deux traces superposées sur un axe commun, kilomètres GPX absolus'
       : 'Fréquence cardiaque réelle en bpm, miroir autour de ' +
         measurement(minimum, 'bpm') + ' : trace 1 bleue au-dessus, trace 2 orange en dessous ; axe horizontal en kilomètres GPX absolus'});
@@ -451,13 +608,15 @@ function renderHeartRateChart(first, second, minimum) {
       {'text-anchor': 'end',
       fill: colors[index], class: 'hr-chart-average-label', 'data-trace': index + 1});
   }
-  host.append(svg);
+  host.append(attachCursor(svg, 'hr', first, second, left, width - right, top, plotBottom, xMin, xMax));
+  updateCursorAccessibility();
   for (let i = 0; i < 2; i++) if (!present[i]) host.append(node('p', 'chart-empty',
     'Trace ' + (i + 1) + ' : aucune mesure FC exploitable sur ce segment.'));
 }
 function renderPaceChart(first, second, slowest) {
   const host = document.querySelector('#compare-pace-chart');
   host.replaceChildren();
+  cursorCharts.delete('pace');
   const overlay = chartModes.pace === 'overlay';
   const speedMode = paceUnit === 'speed';
   const unit = speedMode ? 'km/h' : 'min/km';
@@ -500,13 +659,13 @@ function renderPaceChart(first, second, slowest) {
     format(speedMode || overlay ? slowest : fastest) + ' ' + unit));
   for (let i = 0; i < 2; i++) {
     const item = node('span', 'hr-chart-key'); item.style.color = colors[i];
-    item.textContent = '● Trace ' + (i + 1) + ' · ' + (present[i]
-      ? 'moyenne en mouvement : ' + format(series[i].average_s_per_km) + ' ' + unit
+    item.textContent = 'Moy. mouvement ' + (i + 1) + ' : ' + (present[i]
+      ? format(series[i].average_s_per_km) + ' ' + unit
       : 'aucune allure locale exploitable');
     info.append(item);
   }
   host.append(info);
-  const width = 1000, height = 440, left = 115, right = 28, top = 30, bottom = 57;
+  const width = 1000, height = 340, left = 115, right = 28, top = 30, bottom = 57;
   const middle = (height - bottom + top) / 2, half = middle - top;
   const plotBottom = height - bottom;
   const low = speedMode
@@ -523,7 +682,7 @@ function renderPaceChart(first, second, slowest) {
       : plotBottom - (pace - low) / (high - low) * (plotBottom - top))
     : middle + (index === 0 ? -1 : 1) *
       (speedMode ? value(pace) - center : pace - center) / amplitude * half;
-  const svg = svgNode('svg', {viewBox: '0 0 1000 440', role: 'img',
+  const svg = svgNode('svg', {viewBox: '0 0 1000 340', role: 'group',
     'aria-label': overlay ? (speedMode ? 'Vitesses locales en km/h' : 'Allures locales en min/km') +
       (speedMode ? ' superposées sur une échelle commune, plus haut signifie plus rapide'
         : ' superposées sur une échelle commune, petite valeur en bas et grande valeur en haut')
@@ -611,7 +770,8 @@ function renderPaceChart(first, second, slowest) {
       {'text-anchor': 'end', fill: colors[index], class: 'hr-chart-average-label',
         'data-trace': index + 1});
   }
-  host.append(svg);
+  host.append(attachCursor(svg, 'pace', first, second, left, width - right, top, plotBottom, xMin, xMax));
+  updateCursorAccessibility();
   for (let i = 0; i < 2; i++) if (!present[i]) host.append(node('p', 'chart-empty',
     'Trace ' + (i + 1) + ' : aucune fenêtre de 50 m en mouvement exploitable.'));
   const freezes = series.map(data => data.gps_freeze_s || 0);
@@ -661,10 +821,14 @@ function showResults(payload) {
     notes.append(node('p', '', 'ⓘ Puissance absente d’une trace : aucun écart de puissance calculé.'));
   if (a.elevation_gain_m == null || b.elevation_gain_m == null)
     notes.append(node('p', '', 'ⓘ Altitude absente d’une trace : D+/D− non disponibles pour cette sélection.'));
+  chartPayload = payload;
+  cursorDistance = null;
+  cursorPinned = false;
+  compareResult.hidden = false;
+  document.querySelector('#chart-legend-first').textContent = '● Trace 1 · ' + sources.first.name;
+  document.querySelector('#chart-legend-second').textContent = '● Trace 2 · ' + sources.second.name;
   renderHeartRateChart(a, b, payload.hr_common_min_bpm);
   renderPaceChart(a, b, payload.pace_common_slowest_s_per_km);
-  chartPayload = payload;
-  compareResult.hidden = false;
   compareResult.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 

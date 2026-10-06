@@ -184,16 +184,12 @@ function display(data, filename) {
     card('Durée totale', seconds(data.duration_s), 'Premier → dernier point'),
     card('FC moyenne', metric(data.metrics.hr.average, 'bpm'), 'Max. ' + metric(data.metrics.hr.maximum, 'bpm')),
     card('Puissance moyenne', metric(data.metrics.power.average, 'W'), 'Max. ' + metric(data.metrics.power.maximum, 'W')),
-    card(data.sport === 'course' ? 'Cadence mesurée' : 'Cadence moyenne',
-      metric(data.metrics.cadence.average, data.sport === 'course' ? '' : data.cadence_unit),
+    card('Cadence moyenne',
+      metric(data.metrics.cadence.average, data.sport === 'course' ? 'pas/min' : data.cadence_unit),
       data.sport === 'course'
-        ? 'pas/min estimés ' + (data.cadence_mode === 'double' ? '×2' : '×1') + ' · zéros exclus · ' + seconds(data.metrics.cadence.covered_s) + ' couverts'
+        ? 'pas/min estimés ' + (data.cadence_mode === 'double' ? '×2' : '×1') + ' ·'
         : data.cadence_unit)
   );
-  if (data.sport === 'course') {
-    cards.append(card('Cadence de foulée', metric(data.running_cadence.average, ''),
-      'pas/min estimés · ≥ 130 · ' + seconds(data.running_cadence.covered_s) + ' couverts'));
-  }
   drawZones(data); drawCoverage(data);
   const charts = document.querySelector('#charts'); clear(charts);
   drawChart(charts, data, 'hr', 'Fréquence cardiaque', 'bpm', '#698e56');
