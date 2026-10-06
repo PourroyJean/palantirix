@@ -164,6 +164,7 @@
 .brand-sub { margin-left:2px; color:#738780; }
 .intro { position:relative; }
 .intro h1 em { color:#317276; }
+.intro h1 { font-size:clamp(34px,4vw,54px); line-height:1.06; letter-spacing:-.055em; }
 .eyebrow,.step { color:#4e7775; }
 .intro-art .orbit { border-color:#c7dcd3; }
 .intro-art .orbit-two { border-color:#adccc1; }
