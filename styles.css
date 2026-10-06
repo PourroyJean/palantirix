@@ -182,8 +182,8 @@
 .chart-cursor-readout { position:absolute; top:15%; z-index:3; display:grid; gap:4px; width:max-content; max-width:calc(100% - 16px); padding:8px 10px; border:1px solid #cbd8e1; border-radius:7px; background:#fff; box-shadow:0 2px 8px #203b4e3b; pointer-events:none; font-size:12px; font-weight:750; white-space:nowrap; }
 .chart-cursor-readout[hidden] { display:none !important; }
 .chart-cursor-readout strong { color:#203b4e; }
-.chart-cursor-first { fill:#176bc8; }
-.chart-cursor-second { fill:#c3580d; }
+.chart-cursor-first { color:#176bc8; }
+.chart-cursor-second { color:#c3580d; }
 .chart-cursor-hit { cursor:crosshair; touch-action:none; }
 .chart-cursor-hit:focus-visible { outline:3px solid #237d96; }
 @media(max-width:700px) { .compare-charts-panel { padding:16px; } .compare-chart-legend .quiet { margin-left:0; flex-basis:100%; } .compare-chart-heading { align-items:flex-start; } .compare-chart-heading .chart-controls { margin-left:0; justify-content:flex-start; } .chart-cursor-readout { top:0; transform:translateY(-100%); } }

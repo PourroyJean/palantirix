@@ -346,6 +346,9 @@ function paintCursor() {
 function scheduleCursor() {
   if (!cursorFrame) cursorFrame = requestAnimationFrame(paintCursor);
 }
+// The readout's position is measured in CSS pixels, not SVG viewBox units.
+// Reposition it when the layout changes (e.g. rotating a phone).
+window.addEventListener('resize', scheduleCursor);
 function attachCursor(svg, kind, first, second, left, right, top, bottom, start, end) {
   const group = svgNode('g', {class: 'chart-cursor', visibility: 'hidden', 'aria-hidden': 'true'});
   const line = svgNode('line', {class: 'chart-cursor-line', y1: top, y2: bottom});
@@ -406,6 +409,14 @@ function attachCursor(svg, kind, first, second, left, right, top, bottom, start,
   });
   hit.addEventListener('click', event => {
     if (ignoreTouchClick || event.pointerType === 'touch') { ignoreTouchClick = false; return; }
+    // A keyboard-generated click has no pointer position; keep the distance
+    // established by the arrow/Home/End keys instead of jumping to x=0.
+    if (event.detail === 0) {
+      if (cursorDistance === null) cursorDistance = start;
+      cursorPinned = !cursorPinned;
+      updateCursorAccessibility(); scheduleCursor();
+      return;
+    }
     if (cursorPinned) cursorPinned = false;
     else { setFromEvent(event); cursorPinned = true; }
     updateCursorAccessibility(); scheduleCursor();
