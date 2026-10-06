@@ -1,6 +1,6 @@
-# Palantir — Analyse GPX/TCX
+# Palentirix — Analyse GPX/TCX
 
-Application web statique en français : les calculs se font entièrement dans le navigateur, sans API ni serveur Python.
+Application web statique en français : les calculs se font entièrement dans le navigateur, sans API ni serveur Python. Le dépôt et l’adresse GitHub Pages conservent le nom historique palentir.
 
 Identité visuelle : une pierre de vision et un chemin stylisés dans le logo SVG original (`logo.svg`). Aucun visuel de la franchise n'est utilisé.
 
@@ -27,7 +27,7 @@ Travailler sur une branche dédiée, ouvrir une PR vers `main` et attendre la v�
 
 - Durée totale = dernier timestamp − premier timestamp, en incluant les pauses.
 - Les trois KPI du parcours solo indiquent la distance GPS (km), le D+ et le D− bruts (m). Ils additionnent seulement les paires de points horodatés et consécutifs du même segment, à 30 s maximum d’écart. Chaque total affiche sa durée de couverture ; les parties sans coordonnées ou sans altitude ne sont pas estimées. Si aucune paire exploitable n’existe, afficher « — » plutôt qu’un faux zéro. Les variations d’altitude brutes peuvent amplifier le dénivelé par bruit de mesure.
-- Sous ces KPI, la carte locale du parcours colore chaque tronçon selon la pente estimée sur une fenêtre mobile d’environ 100 m (minimum 50 m exploitable) : descente < −5 %, modéré [−5 %, +5 %[, montée [+5 %, +10 %[, forte montée ≥ +10 %. Quatre cartes récapitulent la distance de chaque plage et sa part de la distance GPS exploitable ; les tronçons sans pente fiable restent gris et sont signalés. Si le GPS est absent, la carte et les valeurs ne sont pas inventées. Les calculs ne traversent ni lacune > 30 s, ni arrêt GPS, ni changement de segment ou altitude manquante. Aucun fond cartographique ou service externe n’est chargé : la carte reste indicative de la géométrie GPS et le dénivelé reste brut.
+- Sous ces KPI, la carte OpenStreetMap colore chaque tronçon selon la pente estimée sur une fenêtre mobile d'environ 100 m (minimum 50 m exploitable) : descente < −5 %, modéré [−5 %, +5 %[, montée [+5 %, +10 %[, forte montée ≥ +10 %. Quatre cartes récapitulent la distance de chaque plage et sa part de la distance GPS exploitable ; les tronçons sans pente fiable restent gris et sont signalés. Si le GPS est absent, la carte et les valeurs ne sont pas inventées. Les calculs ne traversent ni lacune > 30 s, ni arrêt GPS, ni changement de segment ou altitude manquante. Le fond OpenStreetMap se charge automatiquement après analyse d’une trace GPS ; le dénivelé reste brut.
 - Chaque mesure valide représente l'intervalle jusqu'au timestamp suivant, dans le même segment. Les intervalles strictement supérieurs à 30 s sont exclus des moyennes et des zones. Les valeurs absentes ne deviennent pas zéro ; les zéros de puissance et de cadence mesurés sont conservés.
 - Les moyennes sont pondérées par la durée couverte par **chaque** capteur. Les maxima utilisent toutes les mesures valides, y compris le dernier point (qui ne couvre aucun intervalle).
 - Z1 < 136, Z2 = 136–151, Z3 = 152–161, Z4 = 162–169 et Z5 ≥ 170 bpm avec les seuils par défaut. Les bornes inférieures sont incluses et les bornes supérieures exclues ; les quatre débuts de zone sont modifiables. Le temps sans couverture FC inclut les points sans FC, les longues interruptions et les limites de segments. Les durées sont calculées sur les timestamps avec maintien de la dernière FC, pas sur une FC continue réellement observée.
@@ -36,11 +36,13 @@ Travailler sur une branche dédiée, ouvrir une PR vers `main` et attendre la v�
 
 Les fichiers sont analysés par un Web Worker en mémoire et ne sont pas enregistrés par l'application.
 
+Les cartes solo et comparaison utilisent **Leaflet et le fond OpenStreetMap automatiquement** après chargement d’une trace GPS. Le navigateur contacte le serveur de tuiles OpenStreetMap pour la zone affichée : ce fournisseur voit les zones consultées et l’adresse IP, mais ne reçoit ni le fichier GPX/TCX ni les mesures. Les tracés sont superposés par le navigateur. L’attribution OpenStreetMap reste visible. Ce service gratuit n’offre aucune garantie de disponibilité : en cas de panne des tuiles, les tracés restent visibles sur une carte sans fond, sans autre fournisseur de secours. Le zoom par molette est désactivé pour limiter les chargements accidentels.
+
 ## Comparer deux traces
 
 L'onglet **Comparer deux traces** demande deux GPX horodatés choisis manuellement ; aucun GPX de Downloads n'est préchargé. Chaque fichier est limité à 50 Mio. Les traces restent en mémoire pendant la session pour déplacer librement les bornes sans réimporter.
 
-Chaque trace possède ses propres bornes **début / fin** en kilomètres GPS, modifiables par deux curseurs ou par saisie numérique (pas de 10 m ; fin exacte possible). Les tracés entiers apparaissent atténués sur une carte locale ; les portions sélectionnées sont en bleu plein pour la référence et orange pointillé pour la deuxième trace. Curseurs, bornes et légende reprennent ces couleurs. Les extrémités sont interpolées sur les points GPS, et les segments séparés et lacunes de plus de 30 s ne sont pas reliés. Aucun fond cartographique externe ni requête de tuiles n'est utilisé.
+Chaque trace possède ses propres bornes **début / fin** en kilomètres GPS, modifiables par deux curseurs ou par saisie numérique (pas de 10 m ; fin exacte possible). Les tracés entiers apparaissent atténués sur le fond OpenStreetMap ; les portions sélectionnées sont en bleu plein pour la référence et orange pointillé pour la deuxième trace. Curseurs, bornes et légende reprennent ces couleurs. Les extrémités sont interpolées sur les points GPS, et les segments séparés et lacunes de plus de 30 s ne sont pas reliés.
 
 Le bouton **Calculer les performances** analyse uniquement les portions choisies : chronos écoulés, allures, distances, FC, cadence positive (×1 ou ×2 indépendamment), puissance lorsqu'elle existe, D+/D− bruts si l'altitude existe et couverture des capteurs. Les moyennes sont pondérées par le temps exploitable, les pauses restent dans le chrono, et les lacunes de plus de 30 s ne contribuent pas aux moyennes. L'écart de chrono est donné **avec réserve**, jamais comme un verdict de vitesse : deux segments choisis librement peuvent avoir des longueurs, départs ou arrivées différents. Changer une borne efface immédiatement l'ancien résultat.
 

@@ -1,5 +1,6 @@
 import {engine} from './src/client.ts';
 import {activityFileError} from './src/upload.ts';
+import {showSoloMap,closeMap} from './map.js';
 const form = document.querySelector('#form');
 const fileInput = document.querySelector('#file');
 const drop = document.querySelector('.drop');
@@ -12,6 +13,15 @@ const distanceNumber = new Intl.NumberFormat('fr-FR', {minimumFractionDigits: 2,
 const metersNumber = new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 0});
 const percent = new Intl.NumberFormat('fr-FR', {maximumFractionDigits: 2});
 let formVersion = 0;
+const gradeMapError = document.querySelector('#grade-map-error');
+const gradeTileError = () => { gradeMapError.hidden = false; };
+function updateGradeNote(unknown) {
+  document.querySelector('#grade-note').textContent =
+    'Pente estimée sur 100 m de parcours continu (au moins 50 m exploitables). ' +
+    (unknown > .5 ? metersNumber.format(unknown) + ' m sans pente classable (altitude absente, arrêt ou tronçon trop court). ' : '') +
+    'Les variations d’altitude et la précision GPS influencent les pourcentages. ' +
+    'Fond OpenStreetMap : la zone affichée est transmise au fournisseur de tuiles.';
+}
 
 function seconds(value) {
   if (value == null) return '—';
@@ -95,8 +105,14 @@ function drawCoverage(data) {
 const gradeColors = ['#24b964', '#4b91dc', '#ee911d', '#d92d50'];
 const gradeLabels = ['Descente · < −5 %', 'Modéré · −5 à +5 %', 'Montée · +5 à +10 %', 'Forte montée · ≥ +10 %'];
 function drawGrade(data) {
-  const map = document.querySelector('#grade-map'), cards = document.querySelector('#grade-kpis');
-  clear(map); clear(cards);
+  const cards = document.querySelector('#grade-kpis');
+  gradeMapError.hidden = true;
+  closeMap('grade-osm');
+  const hasGeometry = data.grade.geometry.length > 0;
+  document.querySelector('.grade-map-wrap').hidden = !hasGeometry;
+  document.querySelector('#grade-osm').hidden = !hasGeometry;
+  document.querySelector('#grade-map-placeholder').hidden = hasGeometry;
+  clear(cards);
   const {geometry, bins_m: bins, unclassified_m: unknown} = data.grade;
   const distance = data.route.distance_m || 0;
   for (let i = 0; i < bins.length; i++) {
@@ -107,46 +123,7 @@ function drawGrade(data) {
       el('small', '', distance ? percent.format(100 * bins[i] / distance) + ' % du parcours GPS' : 'GPS indisponible'));
     cards.append(tile);
   }
-  const note = document.querySelector('#grade-note');
-  note.textContent = 'Pente estimée sur 100 m de parcours continu (au moins 50 m exploitables). ' +
-    (unknown > .5 ? metersNumber.format(unknown) + ' m sans pente classable (altitude absente, arrêt ou tronçon trop court). ' : '') +
-    'Les variations d’altitude et la précision GPS influencent les pourcentages. Carte locale sans fond ni requête externe.';
-  if (!geometry.length) { map.append(el('p', 'map-placeholder', 'Aucun parcours GPS exploitable pour la carte des pentes.')); return; }
-  const cos = Math.max(.01, Math.cos(geometry[0][0] * Math.PI / 180));
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (const [lat1, lon1, lat2, lon2] of geometry) {
-    for (const [lat, lon] of [[lat1,lon1],[lat2,lon2]]) {
-      minX = Math.min(minX, lon * cos);maxX = Math.max(maxX, lon * cos);
-      minY = Math.min(minY, lat);maxY = Math.max(maxY, lat);
-    }
-  }
-  const width = 1000, height = 420, pad = 34;
-  const scale = Math.min((width - 2 * pad) / Math.max(maxX - minX, 1e-5),
-    (height - 2 * pad) / Math.max(maxY - minY, 1e-5));
-  const x = lon => width / 2 + ((lon * cos) - (minX + maxX) / 2) * scale;
-  const y = lat => height / 2 - (lat - (minY + maxY) / 2) * scale;
-  const svg = svgEl('svg', {viewBox: '0 0 1000 420', role: 'img',
-    'aria-label': 'Trace GPS colorée selon la pente : vert descente, bleu modéré, orange montée, rouge forte montée, gris non classé'});
-  // Each edge is independent, so GPS gaps never create a line between runs.
-  const layers = Array.from({length:5}, () => []);
-  for (const [lat1,lon1,lat2,lon2,bin] of geometry) {
-    layers[bin < 0 ? 4 : bin].push('M' + x(lon1).toFixed(2) + ',' + y(lat1).toFixed(2) +
-      'L' + x(lon2).toFixed(2) + ',' + y(lat2).toFixed(2));
-  }
-  for (let i = 0; i < layers.length; i++) if (layers[i].length) {
-    svg.append(svgEl('path', {d: layers[i].join(''), fill: 'none', stroke: i === 4 ? '#96a6a0' : gradeColors[i],
-      'stroke-width': 5, 'stroke-linecap': 'round', 'stroke-linejoin': 'round',
-      ...(i === 4 ? {'stroke-dasharray': '3 5'} : {})}));
-  }
-  map.append(svg);
-  const key = el('div', 'grade-legend');
-  for (let i = 0; i < 4; i++) {
-    const row = el('span'); const swatch = el('i'); swatch.style.background = gradeColors[i];
-    row.append(swatch, document.createTextNode(gradeLabels[i]));key.append(row);
-  }
-  if (unknown > .5) { const row = el('span');const swatch = el('i');swatch.style.background = '#96a6a0';
-    row.append(swatch, document.createTextNode('Non classé'));key.append(row); }
-  map.append(key);
+  updateGradeNote(unknown);
 }
 
 const SVG_NS = 'http://www.w3.org/2000/svg';
@@ -229,6 +206,9 @@ function display(data, filename) {
   if (route.elevation_covered_s < data.duration_s && route.ascent_m !== null)
     warnings.append(el('p', '', 'ⓘ Dénivelé partiel : interruptions ou altitude absente.'));
   result.hidden = false;
+  if (data.grade.geometry.length) requestAnimationFrame(() => {
+    if (!result.hidden && !document.querySelector('#single-view').hidden) showSoloMap(data.grade, gradeTileError);
+  });
   result.scrollIntoView({behavior: 'smooth', block: 'start'});
 }
 

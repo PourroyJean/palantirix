@@ -1,4 +1,5 @@
 import {engine} from './src/client.ts';
+import {showCompareMap,closeMap,refreshMap} from './map.js';
 const compareForm = document.querySelector('#compare-form');
 const compareResult = document.querySelector('#compare-result');
 const compareStatus = document.querySelector('#compare-status');
@@ -10,6 +11,9 @@ let selectionVersion = 0;
 let chartPayload = null;
 const chartModes = {hr: 'mirror', pace: 'mirror'};
 let paceUnit = 'pace';
+let mapSources = [null, null];
+const compareMapError = document.querySelector('#compare-map-error');
+const compareTileError = () => { compareMapError.hidden = false; };
 const svgNS = 'http://www.w3.org/2000/svg';
 
 function node(tag, className, value) {
@@ -190,6 +194,10 @@ document.querySelectorAll('[data-tab]').forEach(button => button.addEventListene
   const comparing = button.dataset.tab === 'compare';
   document.querySelector('#single-view').hidden = comparing;
   document.querySelector('#compare-view').hidden = !comparing;
+  if (comparing) requestAnimationFrame(() => {
+    if (!document.querySelector('#compare-view').hidden) drawMap();
+  });
+  if (!comparing) requestAnimationFrame(() => refreshMap('grade-osm'));
   document.querySelectorAll('[data-tab]').forEach(tab => {
     tab.classList.toggle('active', tab === button);
     tab.setAttribute('aria-selected', String(tab === button));
@@ -227,76 +235,38 @@ function coordinateAt(geometry, distance, last = false) {
   return coordinate;
 }
 function drawMap() {
-  const host = document.querySelector('#compare-map');
   const legend = document.querySelector('#compare-map-legend');
-  host.replaceChildren(); legend.replaceChildren();
+  legend.replaceChildren();
   const available = ['first', 'second'].filter(side => sources[side]);
   if (!available.length) {
-    host.append(node('p', 'map-placeholder', 'Chargez une activité GPX pour voir son parcours.'));
-    return;
+    compareMapError.hidden = true;
+    closeMap('compare-osm');
+    mapSources = [null, null];
+  }
+  document.querySelector('#compare-map-placeholder').hidden = Boolean(available.length);
+  document.querySelector('#compare-osm').hidden = !available.length;
+  if (available.length) {
+    const tracks = available.map(side => {
+      const source = sources[side];
+      const full = source.preview.geometry;
+      return {side,full,selected:full.map(part => clipPart(part,source.start,source.end)),
+        start:coordinateAt(full,source.start),end:coordinateAt(full,source.end,source.end===source.total)};
+    });
+    if (tracks.length && !document.querySelector('#compare-view').hidden) {
+      const current = [sources.first?.preview, sources.second?.preview];
+      const changed = current.some((preview,index) => preview !== mapSources[index]);
+      showCompareMap(tracks,changed,compareTileError);
+      mapSources = current;
+    }
   }
   const colors = {first: '#176bc8', second: '#e26b17'};
-  const geometry = available.map(side => sources[side].preview.geometry).flat();
-  const origin = geometry[0][0];
-  const latScale = 6371000 * Math.PI / 180;
-  const lonScale = latScale * Math.max(.01, Math.cos(origin[1] * Math.PI / 180));
-  const project = point => [(point[2] - origin[2]) * lonScale, (point[1] - origin[1]) * latScale];
-  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-  for (const part of geometry) for (const point of part) {
-    const [x, y] = project(point);
-    minX = Math.min(minX, x); maxX = Math.max(maxX, x);
-    minY = Math.min(minY, y); maxY = Math.max(maxY, y);
-  }
-  const width = 1000, height = 490, padding = 54;
-  const scale = Math.min((width - padding * 2) / Math.max(maxX - minX, 50),
-    (height - padding * 2) / Math.max(maxY - minY, 50));
-  const centerX = (minX + maxX) / 2, centerY = (minY + maxY) / 2;
-  const pixels = point => {
-    const [x, y] = project(point);
-    return [width / 2 + (x - centerX) * scale, height / 2 - (y - centerY) * scale];
-  };
-  const svg = svgNode('svg', {viewBox: '0 0 1000 490', role: 'img',
-    'aria-label': 'Parcours GPS entiers et segments sélectionnés, bleu plein pour la trace 1 et orange pointillé pour la trace 2'});
-  for (let x = 0; x <= width; x += 100) svg.append(svgNode('line', {x1: x, x2: x, y1: 0, y2: height, class: 'map-grid'}));
-  for (let y = 0; y <= height; y += 100) svg.append(svgNode('line', {x1: 0, x2: width, y1: y, y2: y, class: 'map-grid'}));
-  const polyline = (part, color, strokeWidth, dashed = false, opacity = 1) => {
-    if (part.length < 2) return;
-    svg.append(svgNode('polyline', {points: part.map(point => pixels(point).map(v => v.toFixed(2)).join(',')).join(' '),
-      fill: 'none', stroke: color, 'stroke-width': strokeWidth, 'stroke-linejoin': 'round',
-      'stroke-linecap': 'round', 'stroke-dasharray': dashed ? '10 7' : 'none', opacity}));
-  };
-  for (const side of available) for (const part of sources[side].preview.geometry)
-    polyline(part, colors[side], 3, false, .35);
   for (const side of available) {
-    const selected = sources[side].preview.geometry.map(part => clipPart(part, sources[side].start, sources[side].end));
-    for (const part of selected) {
-      polyline(part, '#fff', side === 'first' ? 10 : 8);
-      polyline(part, colors[side], side === 'first' ? 6 : 5, side === 'second');
-    }
-    for (const [kind, label] of [['start', 'D'], ['end', 'F']]) {
-      const marker = coordinateAt(sources[side].preview.geometry, sources[side][kind],
-        kind === 'end' && sources[side].end === sources[side].total);
-      if (!marker) continue;
-      const [x, y] = pixels(marker);
-      svg.append(svgNode('circle', {cx: x, cy: y, r: 11, fill: '#fff', stroke: colors[side], 'stroke-width': 3}));
-      const text = svgNode('text', {x, y: y + 4, 'text-anchor': 'middle', fill: colors[side],
-        'font-size': 11, 'font-weight': 800});
-      text.textContent = label + (side === 'first' ? '1' : '2'); svg.append(text);
-    }
     const key = node('span', 'map-legend-item');
     const swatch = node('i', 'map-legend-swatch');
     swatch.style.backgroundColor = colors[side];
     if (side === 'second') swatch.style.backgroundImage = 'repeating-linear-gradient(90deg, transparent 0 8px, #fff 8px 12px)';
     key.append(swatch, document.createTextNode(sources[side].name)); legend.append(key);
   }
-  const north = svgNode('text', {x: width - 44, y: 32, fill: '#405b46', 'font-size': 18, 'font-weight': 800});
-  north.textContent = 'N ↑'; svg.append(north);
-  const scaleBar = Math.min(100 * scale, width / 3);
-  svg.append(svgNode('line', {x1: 25, y1: height - 30, x2: 25 + scaleBar, y2: height - 30,
-    stroke: '#344d3b', 'stroke-width': 4}));
-  const scaleLabel = svgNode('text', {x: 25, y: height - 37, fill: '#344d3b', 'font-size': 12});
-  scaleLabel.textContent = Math.round(scaleBar / scale) + ' m'; svg.append(scaleLabel);
-  host.append(svg);
 }
 
 function tableRow(body, title, a, b, delta = '—') {

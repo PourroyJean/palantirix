@@ -18,9 +18,8 @@
 .route-kpi-icon { width:64px; height:64px; flex:none; display:grid; place-items:center; border-radius:16px; background:color-mix(in srgb,var(--kpi-color) 12%,white); color:var(--kpi-color); }
 .route-kpi-icon svg { width:34px; height:34px; stroke:currentColor; }
 .grade-panel { margin:0 0 18px; }
-.grade-map { position:relative; min-height:260px; border-radius:15px; overflow:hidden; background:radial-gradient(circle at 25% 75%,#d7e8de 0 18%,transparent 46%),radial-gradient(circle at 78% 23%,#e9ebdc 0 20%,transparent 54%),#f0f4ef; border:1px solid #dee9e3; }
-.grade-map svg { display:block; width:100%; height:clamp(260px,36vw,430px); }
-.grade-legend { position:absolute; top:16px; left:16px; display:grid; gap:8px; padding:14px 16px; border-radius:12px; background:#ffffffed; box-shadow:0 4px 18px #1c393020; font-size:11px; font-weight:700; color:#344d49; }
+.grade-map-wrap { position:relative; }
+.grade-legend { position:absolute; top:16px; right:16px; z-index:500; display:grid; gap:8px; padding:14px 16px; border-radius:12px; background:#ffffffed; box-shadow:0 4px 18px #1c393020; font-size:11px; font-weight:700; color:#344d49; pointer-events:none; }
 .grade-legend span { display:flex; align-items:center; gap:9px; }
 .grade-legend i { display:block; width:20px; height:7px; border-radius:8px; flex:none; }
 .grade-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:14px; }
@@ -35,7 +34,7 @@
 @media(max-width:580px) { .route-kpis { grid-template-columns:1fr; gap:10px; } .route-kpi:first-child { grid-column:auto; } .route-kpi { min-height:124px; padding:20px; } .route-kpi-value { margin:10px 0 6px; font-size:36px; } .route-kpi-icon { width:58px; height:58px; } }
 @media(max-width:520px) { .grade-legend { position:static; margin:10px; padding:10px; display:flex; flex-wrap:wrap; } .grade-kpi { min-height:135px; } }
 
-/* Solo import: large, accessible drop zone in the Palantir palette. */
+/* Solo import: large, accessible drop zone in the Palentirix palette. */
 .import-panel { padding:clamp(24px,4vw,46px); border-radius:26px; }
 .import-heading { margin-bottom:25px; }
 .import-step { display:inline-flex; align-items:center; padding:9px 17px; border:1px solid #dbe9e5; border-radius:999px; background:#edf6f3; color:#24716f; font-size:12px; font-weight:800; }
@@ -102,9 +101,11 @@
 .checkpoint-list { display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:6px; margin-top:12px; font-size:12px; color:#5b7360; }
 @media(max-width:800px) { .compare-files { grid-template-columns:1fr; } .compare-controls { grid-template-columns:1fr; } }
 .compare-map-panel { margin:14px 0; }
-.compare-map { background:#f3f6ef; border:1px solid #e1e9dd; border-radius:12px; overflow:hidden; }
-.compare-map svg { display:block; width:100%; height:auto; min-height:260px; }
-.map-grid { stroke:#e6ede3; stroke-width:1; }
+.osm-map { height:clamp(300px,44vw,500px); border:1px solid #d9e4dc; border-radius:12px; overflow:hidden; }
+.map-privacy { margin:-8px 0 15px; color:#687c77; font-size:12px; line-height:1.5; }
+.map-error { color:#9a4d1e; background:#fff2e9; padding:10px 14px; border-radius:8px; font-size:12px; }
+.map-point-marker { display:flex !important; align-items:center; justify-content:center; border:3px solid #176bc8; border-radius:50%; background:#fff; color:#176bc8; font:800 11px/1 sans-serif; box-sizing:border-box; box-shadow:0 1px 4px #1b353a55; }
+.map-point-marker.second { border-color:#e26b17; color:#b3540b; }
 .compare-map-legend { display:flex; gap:12px 26px; flex-wrap:wrap; margin-top:14px; }
 .map-legend-item { display:inline-flex; align-items:center; gap:8px; font-size:12px; font-weight:700; color:#526556; overflow-wrap:anywhere; }
 .map-legend-swatch { display:inline-block; width:15px; height:5px; border-radius:3px; flex:none; }
@@ -157,7 +158,7 @@
 .hr-chart-axis-title { fill:#465566; font-size:12px; font-weight:700; }
 .compare-hr-panel .chart-empty { padding:12px 0; }
 
-/* Palantir identity: a quiet viewing stone rather than a generic sport icon. */
+/* Palentirix identity: a quiet viewing stone rather than a generic sport icon. */
 .masthead { background:#f7f7f1; border-bottom-color:#d8e1d8; }
 .brand { display:flex; align-items:center; gap:9px; color:#183e48; }
 .brand-mark { display:block; flex:none; border-radius:50%; }
