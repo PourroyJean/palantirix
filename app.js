@@ -187,7 +187,7 @@ function display(data, filename) {
     card('Cadence moyenne',
       metric(data.metrics.cadence.average, data.sport === 'course' ? 'pas/min' : data.cadence_unit),
       data.sport === 'course'
-        ? 'Conversion GPX ' + (data.cadence_mode === 'double' ? '×2' : '×1') + ' · zéros exclus · ' + seconds(data.metrics.cadence.covered_s) + ' couverts'
+        ? 'pas/min estimés ' + (data.cadence_mode === 'double' ? '×2' : '×1') + ' ·'
         : data.cadence_unit)
   );
   drawZones(data); drawCoverage(data);
