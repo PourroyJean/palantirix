@@ -15,6 +15,8 @@ Identité visuelle : une pierre de vision et un chemin stylisés dans le logo SV
 
 Node.js 22+ recommandé. Ouvrir l’adresse Vite affichée, puis choisir un GPX ou TCX de 50 Mio maximum **par fichier**. Les fichiers restent en mémoire et ne sont pas envoyés à un service externe. Après rechargement, il faut les sélectionner à nouveau. Sur certains mobiles, les très gros exports peuvent dépasser la mémoire disponible. L’application statique est également accessible après publication sous /palentir/ sans exécuter de serveur Python.
 
+Dans l’onglet « Une trace », glisser-déposer le fichier dans la grande zone d’import ou utiliser « Parcourir ». Le bouton d’analyse s’active seulement pour un GPX/TCX/XML non vide de 50 Mio maximum ; sport, zones et cadence restent réglables avant le calcul. Le lien d’aide explique où trouver l’export de l’activité.
+
 Vérifications : `npm run typecheck`, `npm test` et `npm run build`. Le workflow **CI** vérifie ces étapes sur chaque pull request et push vers `main`. Un second workflow **Deploy to GitHub Pages** reconstruit et publie uniquement `dist` pour le commit de `main` qui vient de réussir la CI. La source Pages est GitHub Actions. Site : https://pourroyjean.github.io/palentir/.
 
 ## Contribuer et déployer
@@ -24,6 +26,8 @@ Travailler sur une branche dédiée, ouvrir une PR vers `main` et attendre la v�
 ## Méthode
 
 - Durée totale = dernier timestamp − premier timestamp, en incluant les pauses.
+- Les trois KPI du parcours solo indiquent la distance GPS (km), le D+ et le D− bruts (m). Ils additionnent seulement les paires de points horodatés et consécutifs du même segment, à 30 s maximum d’écart. Chaque total affiche sa durée de couverture ; les parties sans coordonnées ou sans altitude ne sont pas estimées. Si aucune paire exploitable n’existe, afficher « — » plutôt qu’un faux zéro. Les variations d’altitude brutes peuvent amplifier le dénivelé par bruit de mesure.
+- Sous ces KPI, la carte locale du parcours colore chaque tronçon selon la pente estimée sur une fenêtre mobile d’environ 100 m (minimum 50 m exploitable) : descente < −5 %, modéré [−5 %, +5 %[, montée [+5 %, +10 %[, forte montée ≥ +10 %. Quatre cartes récapitulent la distance de chaque plage et sa part de la distance GPS exploitable ; les tronçons sans pente fiable restent gris et sont signalés. Si le GPS est absent, la carte et les valeurs ne sont pas inventées. Les calculs ne traversent ni lacune > 30 s, ni arrêt GPS, ni changement de segment ou altitude manquante. Aucun fond cartographique ou service externe n’est chargé : la carte reste indicative de la géométrie GPS et le dénivelé reste brut.
 - Chaque mesure valide représente l'intervalle jusqu'au timestamp suivant, dans le même segment. Les intervalles strictement supérieurs à 30 s sont exclus des moyennes et des zones. Les valeurs absentes ne deviennent pas zéro ; les zéros de puissance et de cadence mesurés sont conservés.
 - Les moyennes sont pondérées par la durée couverte par **chaque** capteur. Les maxima utilisent toutes les mesures valides, y compris le dernier point (qui ne couvre aucun intervalle).
 - Z1 < 136, Z2 = 136–151, Z3 = 152–161, Z4 = 162–169 et Z5 ≥ 170 bpm avec les seuils par défaut. Les bornes inférieures sont incluses et les bornes supérieures exclues ; les quatre débuts de zone sont modifiables. Le temps sans couverture FC inclut les points sans FC, les longues interruptions et les limites de segments. Les durées sont calculées sur les timestamps avec maintien de la dernière FC, pas sur une FC continue réellement observée.
