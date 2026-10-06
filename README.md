@@ -6,7 +6,7 @@ Identité visuelle : une pierre de vision et un chemin stylisés dans le logo SV
 
 ## Licence
 
-Distribué sous licence MIT (voir `LICENSE`). Vous pouvez utiliser et modifier le code, à condition de conserver la notice de droits d’auteur ; le logiciel est fourni sans garantie. La licence MIT ne confère pas de droits de marque.
+À partir de cette version, le projet est distribué sous licence **PolyForm Noncommercial 1.0.0** (voir `LICENSE`) : usage non commercial autorisé sous ses conditions ; pour un usage commercial, demandez une autorisation distincte à l’auteur. La licence prévoit une exclusion de garantie et de responsabilité dans la mesure permise par la loi. Le code publié antérieurement sous MIT reste soumis à la licence accordée pour cette ancienne version : ce changement ne la révoque pas rétroactivement.
 
 ## Démarrage
 
