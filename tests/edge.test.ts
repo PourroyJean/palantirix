@@ -7,6 +7,16 @@ const points=(ds:number[],ts:number[],hrs:(number|null)[]=ds.map(()=>150),cads:(
  return '<gpx xmlns:x="urn:garmin"><trk><trkseg>'+parts.map((p,i)=>i===segBreak?'</trkseg><trkseg>'+p:p).join('')+'</trkseg></trk></gpx>';
 };
 it('zones, missing sensors, exact 30 s and > 30 s',async()=>{const r=await parseFile(file(points([0,50,100,150],[0,30,61,62],[163,null,172,171],[0,null,80,0],[0,null,100,0])));const a=analyze(r,'course',136,152,164,172,'double');expect(a.zones.unknown_s).toBe(31);expect(a.zones.z3_s).toBe(30);expect(a.zones.z5_s).toBe(1);expect(a.metrics.power.average).toBeCloseTo(100/31);expect(a.metrics.cadence.average).toBe(160)});
+it('n’affiche qu’une cadence course, pondérée sur les mesures positives et convertie en pas/min',async()=>{
+ const r=await parseFile(file(points([0,50,100,150],[0,10,20,30],undefined,[65,0,80,80])));
+ const doubled=analyze(r,'course',136,152,164,172,'double');
+ expect(doubled.metrics.cadence.average).toBeCloseTo(145);
+ expect(doubled.metrics.cadence.covered_s).toBe(20);
+ expect(doubled.metrics.cadence.samples).toBe(3);
+ expect(doubled).not.toHaveProperty('running_cadence');
+ expect(doubled.warnings.join(' ')).not.toMatch(/Foulée ≥ 130/);
+ expect(analyze(r,'course',136,152,164,172,'direct').metrics.cadence.average).toBeCloseTo(72.5);
+});
 it('no bridge across a GPX segment break',async()=>{const r=await parseFile(file(points([0,50,100],[0,5,10],undefined,undefined,undefined,1)));const a=analyze(r,'velo',136,152,162,170,'direct');expect(a.metrics.hr.covered_s).toBe(5);expect(a.zones.unknown_s).toBe(5)});
 it('rejects malformed, DTD, TCX multiple activities and huge files',async()=>{for(const xml of ['<gpx>','<!DOCTYPE gpx><gpx/>','<TrainingCenterDatabase><Activities><Activity/><Activity/></Activities></TrainingCenterDatabase>'])await expect(parseFile(file(xml))).rejects.toBeInstanceOf(AnalysisError);await expect(parseFile(new File([new Uint8Array(MAX_BYTES+1)],'large.gpx'))).rejects.toThrow(/50 Mio/)});
 it('TCX reads watts and run cadence',async()=>{const tcx='<TrainingCenterDatabase><Activities><Activity><Lap><Track><Trackpoint><Time>2026-01-01T00:00:00Z</Time><HeartRateBpm><Value>170</Value></HeartRateBpm><Cadence>85</Cadence><Extensions><TPX><Watts>250</Watts></TPX></Extensions></Trackpoint><Trackpoint><Time>2026-01-01T00:00:10Z</Time><Extensions><TPX><RunCadence>86</RunCadence></TPX></Extensions></Trackpoint></Track></Lap></Activity></Activities></TrainingCenterDatabase>';const r=await parseFile(file(tcx));const a=analyze(r,'course',136,152,162,170,'double');expect(a.metrics.power.average).toBe(250);expect(a.cadence_sources).toEqual(['Cadence','RunCadence'])});

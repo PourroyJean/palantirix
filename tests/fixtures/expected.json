@@ -42,19 +42,13 @@
     },
     "cadence_unit": "pas/min (estimés)",
     "cadence_mode": "double",
-    "running_cadence": {
-      "average": 160.0,
-      "covered_s": 30.0,
-      "threshold_spm": 130
-    },
     "zero_cadence_s": 0.0,
     "cadence_sources": [
       "cad"
     ],
     "max_interval_s": 30,
     "warnings": [
-      "Cadence course : conversion supposée ×2 des cycles/min en pas/min; convention non inscrite dans ce GPX/TCX. Les zéros sont exclus des moyennes, mais peuvent représenter une pause ou un défaut de mesure.",
-      "« Foulée ≥ 130 pas/min » est un repère de cadence, pas une détection certaine de la course ou de la marche."
+      "Cadence course : conversion supposée ×2 des cycles/min en pas/min; convention non inscrite dans ce GPX/TCX. Les zéros sont exclus des moyennes, mais peuvent représenter une pause ou un défaut de mesure."
     ],
     "chart": [
       {
