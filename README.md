@@ -1,6 +1,6 @@
-# Palentirix
+# Palantirix
 
-Analysez une activité GPX/TCX ou comparez deux portions de parcours dans votre navigateur. [Essayer Palentirix](https://pourroyjean.github.io/palentirix/) · [Code source](https://github.com/PourroyJean/palentirix).
+Analysez une activité GPX/TCX ou comparez deux portions de parcours dans votre navigateur. [Essayer Palantirix](https://pourroyjean.github.io/palantirix/) · [Code source](https://github.com/PourroyJean/palantirix).
 
 ## Utilisation
 
@@ -26,7 +26,7 @@ L’exemple « Trail Saint Mens 16 km 2026 » charge les fichiers `Saint_Mens_Pl
 
 ## Confidentialité et licence
 
-Les fichiers importés manuellement sont analysés en mémoire dans un Web Worker, sans API d’analyse ni stockage par Palentirix ; ils sont perdus au rechargement. Le fond OpenStreetMap charge des tuiles : le fournisseur reçoit la zone demandée et votre adresse IP, **pas le fichier GPX ni ses mesures**. Sans tuiles disponibles, les tracés restent visibles sans fond.
+Les fichiers importés manuellement sont analysés en mémoire dans un Web Worker, sans API d’analyse ni stockage par Palantirix ; ils sont perdus au rechargement. Le fond OpenStreetMap charge des tuiles : le fournisseur reçoit la zone demandée et votre adresse IP, **pas le fichier GPX ni ses mesures**. Sans tuiles disponibles, les tracés restent visibles sans fond.
 
 **Exception publique** : les deux GPX Saint Mens dans [public/examples/](public/examples/README.md) ont été approuvés pour publication. Positions, horaires et mesures cardiaques y sont téléchargeables depuis GitHub Pages et l’historique Git. N’ajoutez pas d’autres traces personnelles sans autorisation explicite. Le code est sous [PolyForm Noncommercial 1.0.0](LICENSE) ; cette licence ne détermine pas automatiquement les droits sur les GPX. Les versions du code précédemment publiées sous MIT conservent les droits accordés à l’époque.
 
@@ -38,4 +38,4 @@ Les fichiers importés manuellement sont analysés en mémoire dans un Web Worke
     npm test
     npm run build
 
-Node.js 22+ recommandé. Vite construit sous `/palentirix/` ; seul `dist/` est déployé. Travaillez sur une branche et ouvrez une PR vers `main` : la CI vérifie typage, tests et build. Après fusion, une CI verte sur `main` déclenche le déploiement Pages du commit validé ; une PR seule ne déploie rien. Voir les [consignes de contribution](.agents/skills/palantir-development/SKILL.md). Les autres GPX/TCX privés et `dist/` restent hors de Git.
+Node.js 22+ recommandé. Vite construit sous `/palantirix/` ; seul `dist/` est déployé. Travaillez sur une branche et ouvrez une PR vers `main` : la CI vérifie typage, tests et build. Après fusion, une CI verte sur `main` déclenche le déploiement Pages du commit validé ; une PR seule ne déploie rien. Voir les [consignes de contribution](.agents/skills/palantirix-development/SKILL.md). Les autres GPX/TCX privés et `dist/` restent hors de Git.

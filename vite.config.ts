@@ -1,2 +1,2 @@
 import { defineConfig } from 'vite';
-export default defineConfig({base: '/palentirix/', test: {include: ['tests/**/*.test.ts']}});
+export default defineConfig({base: '/palantirix/', test: {include: ['tests/**/*.test.ts']}});
