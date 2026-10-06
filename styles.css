@@ -17,8 +17,23 @@
 .route-kpi-caption { display:block; color:#83918b; font-size:11px; line-height:1.35; }
 .route-kpi-icon { width:64px; height:64px; flex:none; display:grid; place-items:center; border-radius:16px; background:color-mix(in srgb,var(--kpi-color) 12%,white); color:var(--kpi-color); }
 .route-kpi-icon svg { width:34px; height:34px; stroke:currentColor; }
+.grade-panel { margin:0 0 18px; }
+.grade-map { position:relative; min-height:260px; border-radius:15px; overflow:hidden; background:radial-gradient(circle at 25% 75%,#d7e8de 0 18%,transparent 46%),radial-gradient(circle at 78% 23%,#e9ebdc 0 20%,transparent 54%),#f0f4ef; border:1px solid #dee9e3; }
+.grade-map svg { display:block; width:100%; height:clamp(260px,36vw,430px); }
+.grade-legend { position:absolute; top:16px; left:16px; display:grid; gap:8px; padding:14px 16px; border-radius:12px; background:#ffffffed; box-shadow:0 4px 18px #1c393020; font-size:11px; font-weight:700; color:#344d49; }
+.grade-legend span { display:flex; align-items:center; gap:9px; }
+.grade-legend i { display:block; width:20px; height:7px; border-radius:8px; flex:none; }
+.grade-kpis { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-top:14px; }
+.grade-kpi { min-width:0; min-height:148px; padding:16px 12px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; border-radius:16px; background:var(--grade-color); color:white; }
+.grade-arrow { font-size:31px; line-height:1; margin-bottom:7px; font-weight:500; }
+.grade-name { font-size:11px; font-weight:750; min-height:2.4em; }
+.grade-kpi strong { font-size:clamp(22px,2.5vw,33px); letter-spacing:-.04em; font-variant-numeric:tabular-nums; margin-top:6px; }
+.grade-kpi small { font-size:11px; margin-top:4px; color:#fffdf0; font-variant-numeric:tabular-nums; }
+.grade-panel .footnote { margin-top:14px; }
 @media(max-width:950px) { .route-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .route-kpi:first-child { grid-column:1/-1; } }
+@media(max-width:700px) { .grade-kpis { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:580px) { .route-kpis { grid-template-columns:1fr; gap:10px; } .route-kpi:first-child { grid-column:auto; } .route-kpi { min-height:124px; padding:20px; } .route-kpi-value { margin:10px 0 6px; font-size:36px; } .route-kpi-icon { width:58px; height:58px; } }
+@media(max-width:520px) { .grade-legend { position:static; margin:10px; padding:10px; display:flex; flex-wrap:wrap; } .grade-kpi { min-height:135px; } }
 @media (max-width: 800px) {
   .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .zonelegend { grid-template-columns: repeat(2, minmax(0, 1fr)); }

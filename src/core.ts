@@ -1,4 +1,5 @@
 import {SaxesParser} from 'saxes';
+import {gradeProfile} from './grade.ts';
 export const MAX_BYTES = 50 * 1024 * 1024;
 export const MAX_GAP = 30;
 export type Sensor = 'hr'|'power'|'cadence';
@@ -99,5 +100,5 @@ export function analyze(route:Route,sport:'velo'|'course',z2:number,z3:number,z4
   for(const [key,label] of [['hr','FC'],['power','puissance'],['cadence','cadence']] as [Sensor,string][])if(!metrics[key].samples)warnings.push('Aucune mesure de '+label+' disponible.');else if(!coverage[key]&&duration)warnings.push('Aucun intervalle exploitable pour la moyenne de '+label+'.');
   if(zones.unknown_s)warnings.push('Le temps sans couverture FC inclut les mesures absentes et les interruptions de plus de 30 s.');
   if(sport==='course'&&sources.length){warnings.push('Cadence course : '+(factor===2?'conversion supposée ×2 des cycles/min en pas/min':'valeurs supposées déjà en pas/min')+'; convention non inscrite dans ce GPX/TCX. Les zéros sont exclus des moyennes, mais peuvent représenter une pause ou un défaut de mesure.');if(runningCoverage)warnings.push('« Foulée ≥ 130 pas/min » est un repère de cadence, pas une détection certaine de la course ou de la marche.')}
-  return {format:route.kind.toUpperCase(),sport,points:p.length,start:iso(start),end:iso(end),duration_s:duration,route:routeTotals(p),metrics,zones,thresholds:{z2_min:z2,z3_min:z3,z4_min:z4,z5_min:z5},cadence_unit:sport==='velo'?'tr/min':'pas/min (estimés)',cadence_mode:sport==='course'?mode:null,running_cadence:{average:runningCoverage?running/runningCoverage:null,covered_s:runningCoverage,threshold_spm:130},zero_cadence_s:zeroCadence,cadence_sources:sources,max_interval_s:MAX_GAP,warnings,chart:p.map(x=>({t:(x.time-start)/1000,segment:x.segment,hr:x.hr,power:x.power,cadence:x.cadence!==null&&(sport!=='course'||x.cadence>0)?x.cadence*factor:null}))};
+  return {format:route.kind.toUpperCase(),sport,points:p.length,start:iso(start),end:iso(end),duration_s:duration,route:routeTotals(p),grade:gradeProfile(p),metrics,zones,thresholds:{z2_min:z2,z3_min:z3,z4_min:z4,z5_min:z5},cadence_unit:sport==='velo'?'tr/min':'pas/min (estimés)',cadence_mode:sport==='course'?mode:null,running_cadence:{average:runningCoverage?running/runningCoverage:null,covered_s:runningCoverage,threshold_spm:130},zero_cadence_s:zeroCadence,cadence_sources:sources,max_interval_s:MAX_GAP,warnings,chart:p.map(x=>({t:(x.time-start)/1000,segment:x.segment,hr:x.hr,power:x.power,cadence:x.cadence!==null&&(sport!=='course'||x.cadence>0)?x.cadence*factor:null}))};
 }
